@@ -1,0 +1,118 @@
+; This is a description of bconf's grammar using ABNF as defined in RFC 5234 (https://datatracker.ietf.org/doc/html/rfc5234),
+; with case-sensitivity support from RFC 7405 (https://datatracker.ietf.org/doc/html/rfc7405).
+; 
+; bconf documents are expected to be UTF-8 encoded. Some grammar rules in this document, such as
+; allowed characters in strings and comments, refer to their Unicode Code Points.
+;
+; Unless specified otherwise, white space is largely negligible and can be used for formatting,
+; denoted by the OWSP rule (meaning optional white space). White space that is significant
+; will be denoted with the WSP rule.
+;
+; Supporting documents and comments should be consulted for a full implementation. While
+; core features such as `import`, `extends` and `exports` conform to the grammar, they are
+; defined by their behaviour and specific implementation.
+
+bconf	= OWSP [ item *( 1*NEWLINE OWSP item ) ] OWSP
+item	= key-value / node / comment
+
+; -----------------------
+; Core Statements
+; -----------------------
+key-value		= key OWSP ( "=" / "<<" ) OWSP value
+key-value		=/ key OWSP block
+node			= key 1*WSP 1*( node-item [ 1*WSP ] )
+node-item		= ( value / key )
+comment			= "//" *( comment-char )
+
+; -----------------------
+; Values & Data Structures
+; -----------------------
+value			= primitive / block / tagged-value / variable-key
+primitive		= string / number / bool / null
+block			= object / array
+tagged-value	= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
+object			= LBRACE OWSP [ object-member *( block-sep object-member ) [ OWSP COMMA ] ] OWSP RBRACE
+object-member	= OWSP ( key-value / key / comment ) OWSP
+array			= LBRACKET OWSP [ value *( block-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
+block-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
+
+; -----------------------
+; Keys & Variables
+; -----------------------
+key					= access-key *( ( PERIOD access-key ) / array-accessor )
+access-key			= base-key / variable-key / dynamic-key
+base-key			= alphanumeric-key / singleline-string
+array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
+variable-key		= DOLLARSIGN alphanumeric-key
+variable-path		= variable-key *( ( PERIOD access-key ) / array-accessor )
+dynamic-key			= LBRACKET OWSP expression OWSP LBRACKET
+alphanumeric-key	= 1*( ALPHA / DIGIT / HYPHEN-MINUS / UNDERSCORE )
+expression			= variable-path / tagged-value
+
+; -----------------------
+; Primitives
+; -----------------------
+string				= multiline-string / singleline-string
+singleline-string	= DQUOTE *( string-char / escaped-char / value-substitute ) DQUOTE
+multiline-string	= 3DQUOTE *( multiline-char / escaped-char / value-substitute ) 3DQUOTE
+
+number			= float / integer
+integer			= [ HYPHEN-MINUS ] dec-int
+float			= [ HYPHEN-MINUS ] ( ( dec-int PERIOD [ dec-int ] [ exponent ] ) / ( dec-int exponent ) )
+dec-int			= DIGIT *( [ UNDERSCORE ] DIGIT )
+exponent		= "e" [ HYPHEN-MINUS ] dec-int
+
+bool			= %s"true" / %s"false"
+null			= %s"null"
+
+; -----------------------
+; Allowed Characters
+; -----------------------
+comment-char	= HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable chars, no controls
+string-char		= %x20-21 / %x23 / %x25-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars ", \, $
+multiline-char	= HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
+
+value-substitute	= DOLLARSIGN LBRACE OWSP expression OWSP RBRACE
+escaped-char		= "\" ( 
+	%x22 /			; "				quotation mark
+	%x5C /			; \				backslash
+	%x24 /			; $				dollar sign
+	%x62 /			; b				backspace
+	%x66 /			; f				form feed
+	%x6E /			; n				new line
+	%x72 /			; r				carriage return
+	%x74 /			; t				tab
+	%x75 4HEXDIG /	; uXXXX			U+XXXX
+	%x55 8HEXDIG	; UXXXXXXXX		U+XXXXXXXX
+)
+
+; -----------------------
+; BConf Common Symbols & Whitespace
+; -----------------------
+NEWLINE			= LF / CRLF
+OWSP			= *( WSP / NEWLINE ) ; Optional white space. Different to WSP, this denotes white space that carries no syntactical significance
+LBRACE			= "{"
+RBRACE			= "}"
+LBRACKET		= "["
+RBRACKET		= "]"
+LPAREN			= "("
+RPAREN			= ")"
+COMMA			= ","
+PERIOD			= "."
+DOLLARSIGN		= "$"
+HYPHEN-MINUS	= "-"
+UNDERSCORE 		= "_"
+
+; -----------------------
+; Core ABNF Rules (included for clarity)
+; -----------------------
+ALPHA		= %x41-5A / %x61-7A		; A-Z / a-z
+CR			= %x0D					; carriage return
+CRLF		= CR LF					; internet standard newline
+DIGIT		= %x30-39				; 0-9
+DQUOTE		= %x22					; " (double quote)
+HEXDIG		= DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+HTAB		= %x09					; horizontal tab
+LF			= %x0A					; linefeed
+SP			= %x20					; space
+WSP			= SP / HTAB				; white space
