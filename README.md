@@ -1,6 +1,11 @@
 # bconf
 
+<img align="right" src="logos/bconf-100.png" alt="bconf logo">
+
 For better configuration files
+
+> This repository contains the latest draft version of the bconf specification.
+> You can find the released versions at https://bconf-lang.org
 
 ## Design Principles
 
@@ -102,3 +107,7 @@ Unlike other data-serialization formats, bconf does not require a strict hierarc
 Features often used in tandem when creating configuration with data-serialization formats, such as extending files and schemas, are typically implementation specific and non-portable. However, features like this are standardized in bconf, ensuring the same set of features can be used regardless of parser or language.
 
 As bconf is explicitly designed for configuration files, it is not intended to support serializing arbitrary data structures. The root of any valid bconf document is always a hash-map which excludes some data from being serialized.
+
+## Pitching in
+
+Ideas, pull requests, documentation, bug fixes, and all other contributions are welcome!
