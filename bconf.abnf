@@ -21,7 +21,7 @@ item	= key-value / node / comment
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
 key-value		=/ key OWSP block
 node			= key 1*WSP 1*( node-item [ 1*WSP ] )
-node-item		= ( value / key )
+node-item		= value / key
 comment			= "//" *( comment-char )
 
 ; -----------------------
@@ -41,7 +41,7 @@ block-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
 ; -----------------------
 key					= access-key *( ( PERIOD access-key ) / array-accessor )
 access-key			= base-key / variable-key / dynamic-key
-base-key			= alphanumeric-key / singleline-string
+base-key			= alphanumeric-key / string
 array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
 variable-key		= DOLLARSIGN alphanumeric-key
 variable-path		= variable-key *( ( PERIOD access-key ) / array-accessor )
