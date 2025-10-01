@@ -1,0 +1,374 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "bconf",
+	"scopeName": "source.bconf",
+	"patterns": [
+		{
+			"include": "#comment"
+		},
+		{
+			"include": "#keyval"
+		},
+		{
+			"include": "#node"
+		}
+	],
+	"repository": {
+		"comment": {
+			"name": "comment.line.double-slash.bconf",
+			"match": "//.*"
+		},
+		"node": {
+			"name": "meta.node.bconf",
+			"begin": "([a-zA-Z0-9_\\-\\.\\$\"\\(\\)\\[\\]]+)(?=[ \\t]+(?![\\{\\[=]|<<))",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#key"
+						}
+					]
+				}
+			},
+			"end": "(?=$|//)",
+			"patterns": [
+				{
+					"include": "#value"
+				},
+				{
+					"name": "string.unquoted.node.bconf",
+					"match": "[a-zA-Z0-9_-]+"
+				},
+				{
+					"include": "#key"
+				}
+			]
+		},
+		"keyval": {
+			"name": "meta.key-value.bconf",
+			"begin": "([a-zA-Z0-9_\\-\\.\\$\\\"\\(\\)\\[\\]]+)(?=[ \\t]*(?=[\\[\\{=]|<<))",
+			"beginCaptures": {
+				"1": {
+					"patterns": [
+						{
+							"include": "#key"
+						}
+					]
+				}
+			},
+			"end": "(?=$|//)",
+			"patterns": [
+				{
+					"name": "punctuation.assignment.equals.bconf",
+					"match": "="
+				},
+				{
+					"name": "punctuation.assignment.append.bconf",
+					"match": "<<"
+				},
+				{
+					"include": "#value"
+				}
+			]
+		},
+		"key": {
+			"name": "meta.key.bconf",
+			"patterns": [
+				{
+					"name": "punctuation.separator.dot.bconf",
+					"match": "\\."
+				},
+				{
+					"include": "#variable_key"
+				},
+				{
+					"include": "#dynamic_key"
+				},
+				{
+					"include": "#alphanumeric_key"
+				},
+				{
+					"include": "#string"
+				},
+				{
+					"name": "meta.key.array-index.bconf",
+					"begin": "\\[(?=\\-?(?:\\d(?:_?\\d)*)\\])",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.key.array-index.begin.bconf"
+						}
+					},
+					"end": "\\]",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.key.array-index.end.bconf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#integer"
+						}
+					]
+				}
+			]
+		},
+		"variable_key": {
+			"name": "variable.other.bconf",
+			"match": "\\$[a-zA-Z0-9_-]+"
+		},
+		"alphanumeric_key": {
+			"name": "entity.name.tag.alphanumeric.bconf",
+			"match": "[a-zA-Z0-9_-]+"
+		},
+		"dynamic_key": {
+			"name": "meta.key.dynamic.bconf",
+			"begin": "\\[(?=[^\\]]*[a-zA-Z][^\\]]*)",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.dynamic-key.begin.bconf"
+				}
+			},
+			"end": "\\]",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.dynamic-key.end.bconf"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"value": {
+			"name": "meta.value.bconf",
+			"patterns": [
+				{
+					"include": "#string"
+				},
+				{
+					"include": "#number"
+				},
+				{
+					"include": "#bool"
+				},
+				{
+					"include": "#null"
+				},
+				{
+					"include": "#block"
+				},
+				{
+					"include": "#tagged_value"
+				},
+				{
+					"include": "#variable_key"
+				}
+			]
+		},
+		"bool": {
+			"name": "constant.language.boolean.bconf",
+			"match": "\\b(true|false)\\b"
+		},
+		"null": {
+			"name": "constant.language.null.bconf",
+			"match": "\\bnull\\b"
+		},
+		"number": {
+			"patterns": [
+				{
+					"include": "#float"
+				},
+				{
+					"include": "#integer"
+				}
+			]
+		},
+		"integer": {
+			"name": "constant.numeric.integer.bconf",
+			"match": "-?\\d+(?:_\\d+)*\\b"
+		},
+		"float": {
+			"name": "constant.numeric.float.bconf",
+			"match": "-?(?:\\d+(?:_\\d+)*\\.\\d+(?:_\\d+)*|\\.\\d+(?:_\\d+)*)(?:[eE][+-]?\\d+(?:_\\d+)*)?\\b"
+		},
+		"block": {
+			"patterns": [
+				{
+					"include": "#object"
+				},
+				{
+					"include": "#array"
+				}
+			]
+		},
+		"block_sep": {
+			"name": "punctuation.separator.block.bconf",
+			"match": ","
+		},
+		"object": {
+			"name": "meta.object.bconf",
+			"begin": "\\{",
+			"end": "\\}",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.object.begin.bconf"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.object.end.bconf"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#block_sep"
+				},
+				{
+					"include": "#keyval"
+				},
+				{
+					"include": "#key"
+				},
+				{
+					"include": "#comment"
+				}
+			]
+		},
+		"array": {
+			"name": "meta.array.bconf",
+			"begin": "\\[",
+			"end": "\\]",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.array.begin.bconf"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.array.end.bconf"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#block_sep"
+				},
+				{
+					"include": "#value"
+				},
+				{
+					"include": "#comment"
+				}
+			]
+		},
+		"string": {
+			"patterns": [
+				{
+					"name": "string.quoted.triple.bconf",
+					"begin": "\"\"\"",
+					"end": "\"\"\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.bconf"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.bconf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#string_chars"
+						}
+					]
+				},
+				{
+					"name": "string.quoted.double.bconf",
+					"begin": "\"",
+					"end": "\"",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.begin.bconf"
+						}
+					},
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.definition.string.end.bconf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#string_chars"
+						}
+					]
+				}
+			]
+		},
+		"string_chars": {
+			"name": "meta.string.chars.bconf",
+			"patterns": [
+				{
+					"name": "constant.character.escape.bconf",
+					"match": "\\\\(\"|\\\\|\\$|b|f|n|r|t|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})"
+				},
+				{
+					"name": "meta.interpolated.bconf",
+					"begin": "\\$\\{",
+					"beginCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.begin.bconf"
+						}
+					},
+					"end": "\\}",
+					"endCaptures": {
+						"0": {
+							"name": "punctuation.section.interpolation.end.bconf"
+						}
+					},
+					"patterns": [
+						{
+							"include": "#expression"
+						}
+					]
+				}
+			]
+		},
+		"tagged_value": {
+			"name": "meta.tagged-value.bconf",
+			"begin": "([a-zA-Z0-9_-]*)\\s*(\\()",
+			"end": "\\)",
+			"beginCaptures": {
+				"1": {
+					"name": "entity.name.function.tagged-value.bconf"
+				},
+				"2": {
+					"name": "punctuation.definition.tagged-value.paren.begin.bconf"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.tagged-value.paren.end.bconf"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#value"
+				},
+				{
+					"include": "#key"
+				}
+			]
+		},
+		"expression": {
+			"patterns": [
+				{
+					"include": "#variable_key"
+				},
+				{
+					"include": "#tagged_value"
+				}
+			]
+		}
+	}
+}
