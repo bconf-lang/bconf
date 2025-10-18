@@ -490,11 +490,11 @@ import from "./common.bconf" {
 app.name = $app_name // The value here is "My Awesome App"
 ```
 
-An import instruction must be `true`, `false`, or an `as()` tag. Any other value is invalid. The following is the expected logic for each valid value:
+An import instruction must be `true`, `false`, or an `as` statement. Any other value is invalid. The following is the expected logic for each valid value:
 
 -   `true` (shorthand or explicit): Imports the actual value of the variable under its original name.
 -   `false`: Does not import the variable.
--   `as($variable_key)`: Imports the actual value of the variable under a new alias specified as the value inside the parentheses.
+-   `$variable as $aliased`: Imports the actual value of the variable under a new alias specified after `as`.
 
 ```bconf
 import from "path/to/file.bconf" {
@@ -505,7 +505,7 @@ import from "path/to/file.bconf" {
     $explicit_true = true
 
     // VALID: Imports $original and renames it to $new_alias.
-    $original = as($new_alias)
+    $original as $new_alias
 
     // VALID: The value `false` is used to skip imports. Although valid,
     // it is encouraged to simply omit the key entirely.
@@ -525,10 +525,12 @@ Syntax: `export vars { $var1, $var2, ... }`
 
 The `export` statement makes variables from the current file available for other files to `import`.
 
-Inside the object, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` statement, there is the actual value and export instruction. The only valid export instruction is `true`. Any other value can immediately be considered an inline definition. Parsers must implement the following logic when working with the `true` export instruction:
+Inside the object, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` statement, there is the actual value and export instruction.
 
--   If there is a variable defined with the same name in the document, it is considered a reference.
--   Otherwise, if there is no matching name, it is an inline definition where the value is `true`.
+An export instruction is `true` or an `as` statement. Any other value can immediately be considered an inline definition. Any other statement is invalid. The following is the expected logic for each valid export instruction:
+
+-   `true`: If there is a variable defined with the same name in the document, it is considered a reference. Otherwise, if there is no matching name, it is an inline definition where the value is `true`
+-   `$variable as $alias`: Exports the actual value for `$variable` under the `$alias` name
 
 ```bconf
 $app_name = "My App"
@@ -545,7 +547,10 @@ export vars {
     // This $env cannot be used elsewhere in this file.
     $env = "production"
 
-    // ALIAS: Exports the value of $app_name under the name $name.
+    // ALIAS: Export the value for $app_name under the $aliased_name name
+    $app_name as $aliased_name
+
+    // This is another way to alias since its assigning the value of $app_name under the name $name.
     $name = $app_name
 
     // ----------------------------------------------------
