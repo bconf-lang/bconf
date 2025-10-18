@@ -354,7 +354,7 @@ mixed_array = [
 ]
 ```
 
-## Statement
+## Statements
 
 Statements are a special syntax for creating configurations that read like sentences. A statement consists of a key followed by a series of values separated by whitespace.
 
