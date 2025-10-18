@@ -42,18 +42,17 @@ block-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
 key					= access-key *( ( PERIOD access-key ) / array-accessor )
 access-key			= base-key / variable-key
 base-key			= alphanumeric-key / singleline-string
+alphanumeric-key	= 1*( ALPHA / DIGIT / HYPHEN-MINUS / UNDERSCORE )
 array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
 variable-key		= DOLLARSIGN alphanumeric-key
 variable-path		= variable-key *( ( PERIOD access-key ) / array-accessor )
-alphanumeric-key	= 1*( ALPHA / DIGIT / HYPHEN-MINUS / UNDERSCORE )
-expression			= variable-path / tag
 
 ; -----------------------
 ; Primitives
 ; -----------------------
 string				= multiline-string / singleline-string
-singleline-string	= DQUOTE *( string-char / escaped-char / value-substitute ) DQUOTE
-multiline-string	= 3DQUOTE *( multiline-char / escaped-char / value-substitute ) 3DQUOTE
+singleline-string	= DQUOTE *( string-char / escaped-char / embedded-value ) DQUOTE
+multiline-string	= 3DQUOTE *( multiline-char / escaped-char / embedded-value ) 3DQUOTE
 
 number			= float / integer
 integer			= [ HYPHEN-MINUS ] dec-int
@@ -71,7 +70,7 @@ comment-char	= HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable cha
 string-char		= %x20-21 / %x23 / %x25-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars ", \, $
 multiline-char	= HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
 
-value-substitute	= DOLLARSIGN LBRACE OWSP expression OWSP RBRACE
+embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / tag ) OWSP RBRACE
 escaped-char		= "\" ( 
 	%x22 /			; "				quotation mark
 	%x5C /			; \				backslash

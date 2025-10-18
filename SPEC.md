@@ -153,7 +153,7 @@ alphanumeric-key = "value"
 1234 = "value" // The key is the string "1234"
 ```
 
-Quoted keys are a single-line string used as a key. They follow the same rules as string values and are useful for keys containing special characters, or dynamic keys using value substitution. Multi-line strings are invalid.
+Quoted keys are a single-line string used as a key. They follow the same rules as string values and are useful for keys containing special characters, or dynamic keys using embedded values. Multi-line strings are invalid.
 
 ```bconf
 "string key" = "value"
@@ -187,7 +187,7 @@ Keys cannot be empty. This applies to quoted keys that resolve to an empty strin
 "" = "value"
 
 $empty_string_var = ""
-// INVALID: Quoted key with value substitution resolves to an empty string
+// INVALID: Quoted key with embedded value resolves to an empty string
 "${$empty_string_var}" = "value"
 ```
 
@@ -229,13 +229,13 @@ The following escape sequences are reserved. Using any other escape sequence (e.
 
 Any Unicode character may be escaped with the `\uHHHH` or `\UHHHHHHHH` forms and must be Unicode scalar values.
 
-You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that cannot be converted to a string (like objects and arrays) are invalid.
+You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that are not a primitive value (like objects and arrays) are invalid. Variables and tags must resolve to a primitive value.
 
 ```bconf
-$variable = "substitution"
+$variable = "embedded value"
 
-// Resolves to "This is a string using value substitution!"
-key = "This is a string using value ${$variable}!"
+// Resolves to "This is a string using an embedded value!"
+key = "This is a string using an ${$variable}!"
 ```
 
 ## Numbers
