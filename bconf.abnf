@@ -13,15 +13,15 @@
 ; defined by their behaviour and specific implementation.
 
 bconf	= OWSP [ item *( 1*NEWLINE OWSP item ) ] OWSP
-item	= key-value / node / comment
+item	= key-value / statement / comment
 
 ; -----------------------
 ; Core Statements
 ; -----------------------
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
 key-value		=/ key OWSP block
-node			= key 1*WSP 1*( node-item [ 1*WSP ] )
-node-item		= value / key
+statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
+statement-item	= value / key
 comment			= "//" *( comment-char )
 
 ; -----------------------

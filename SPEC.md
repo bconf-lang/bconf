@@ -14,7 +14,7 @@ For better configuration files
 -   [Null](#null)
 -   [Objects](#objects)
 -   [Arrays](#arrays)
--   [Nodes](#nodes)
+-   [Statements](#statements)
 -   [Tagged Values](#tagged-values)
 -   [Variables](#variables)
 -   [Built-ins](#built-ins)
@@ -135,7 +135,7 @@ array [
 ]
 ```
 
-This shorthand is only for block values. If the operator is omitted for any other value (eg. string, number, etc.) it is a [node](#nodes).
+This shorthand is only for block values. If the operator is omitted for any other value (eg. string, number, etc.) it is a [statement](#statement).
 
 ## Keys
 
@@ -364,11 +364,11 @@ mixed_array = [
 ]
 ```
 
-## Nodes
+## Statement
 
-Nodes are a special syntax for creating configurations that read like sentences. A node consists of a key followed by a series of values separated by whitespace.
+Statements are a special syntax for creating configurations that read like sentences. A statement consists of a key followed by a series of values separated by whitespace.
 
-Defining a node with the same key multiple times appends a new list of values, resulting in a 2D array, rather than overwriting.
+Defining a statement with the same key multiple times appends a new list of values, resulting in a 2D array, rather than overwriting.
 
 For example, this:
 
@@ -388,7 +388,7 @@ Is parsed into a structure like this (represented as JSON):
 }
 ```
 
-The following are valid values for nodes:
+The following are valid values for statements:
 
 -   [Keys](#keys)
     -   **NOTE** as a value, these are considered unquoted strings and not actual keys. The same character rules for keys still apply.
@@ -401,7 +401,7 @@ The following are valid values for nodes:
 -   [Tagged Values](#tagged-values)
 -   [Variables](#variables)
 
-Important: This syntax is only considered a node if the value immediately after the key is not an object (`{`) or array (`[`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
+Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`) or array (`[`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
 
 ## Tagged Values
 
@@ -469,7 +469,7 @@ Implementations are expected to implement the following built-in functionality. 
 
 Syntax: `import from "path/to/file.bconf" { $var1, $var2, ... }`
 
-The `import` node allows for imports variables defined in other bconf files for use within the current file. Only local file paths are supported (relative or absolute). `import` nodes must defined before their variables can be used.
+The `import` statement allows for imports variables defined in other bconf files for use within the current file. Only local file paths are supported (relative or absolute). `import` statements must defined before their variables can be used.
 
 ```bconf
 // INVALID: Cannot use $app_name before it has been imported
@@ -482,7 +482,7 @@ name = $app_name
 It's important to understand the difference between a variable's actual value (the data to be imported and what should actually be used) and the import instruction (the values assigned to the variable inside the object).
 
 -   Actual Value: This is the value defined for the variable in the source file. It's the value that will be made available in your current file.
--   Import Instruction: This is the value assigned to the variable inside the import node object.
+-   Import Instruction: This is the value assigned to the variable inside the import statement object.
 
 ```bconf
 // common.bconf
@@ -533,9 +533,9 @@ import from "path/to/file.bconf" {
 
 Syntax: `export vars { $var1, $var2, ... }`
 
-The `export` node makes variables from the current file available for other files to `import`.
+The `export` statement makes variables from the current file available for other files to `import`.
 
-Inside the object, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` node, there is the actual value and export instruction. The only valid export instruction is `true`. Any other value can immediately be considered an inline definition. Parsers must implement the following logic when working with the `true` export instruction:
+Inside the object, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` statement, there is the actual value and export instruction. The only valid export instruction is `true`. Any other value can immediately be considered an inline definition. Parsers must implement the following logic when working with the `true` export instruction:
 
 -   If there is a variable defined with the same name in the document, it is considered a reference.
 -   Otherwise, if there is no matching name, it is an inline definition where the value is `true`.
