@@ -15,7 +15,7 @@ For better configuration files
 -   [Objects](#objects)
 -   [Arrays](#arrays)
 -   [Statements](#statements)
--   [Tagged Values](#tagged-values)
+-   [Tags](#tags)
 -   [Variables](#variables)
 -   [Built-ins](#built-ins)
     -   [Reserved Keys](#reserved-keys)
@@ -70,7 +70,7 @@ A value must be one of the following types:
 -   [Null](#null)
 -   [Objects](#objects)
 -   [Arrays](#arrays)
--   [Tagged Values](#tagged-values)
+-   [Tags](#tags)
 -   [Variables](#variables)
 
 Every key be assigned a value. A key declaration without a value is invalid
@@ -161,7 +161,7 @@ Quoted keys are string literals (single or multi-line) used as keys. They follow
     string key""" = "value"
 ```
 
-Dynamic keys are wrapped in square brackets (`[]`) and use a variable or tagged value that resolves to a string. If the variable or tagged value cannot be resolved to a string, it is invalid.
+Dynamic keys are wrapped in square brackets (`[]`) and use a variable or tag that resolves to a string. If the variable or tag cannot be resolved to a string, it is invalid.
 
 ```bconf
 $variable = "bar"
@@ -347,7 +347,7 @@ inline_object = { enabled, port = 8080 }
 
 An array is an ordered list of values wrapped in square brackets (`[]`). Like objects, values can be separated by newlines or commas, and trailing commas are allowed. Arrays can contain a mix of value types.
 
-Arrays can only contain primitive values, block values, variables and tagged values. Any other value is invalid.
+Arrays can only contain primitive values, block values, variables and tags. Any other value is invalid.
 
 ```bconf
 // An array of strings
@@ -398,14 +398,14 @@ The following are valid values for statements:
 -   [Null](#null)
 -   [Objects](#objects)
 -   [Arrays](#arrays)
--   [Tagged Values](#tagged-values)
+-   [Tags](#tags)
 -   [Variables](#variables)
 
 Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`) or array (`[`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
 
-## Tagged Values
+## Tags
 
-Tagged values act like functions that process or generate a value. The syntax is a tag followed by a value in parentheses, like `tag_name(value)`.
+Tags act like functions that process or generate a value. The syntax is a tag followed by a value in parentheses, like `tag_name(value)`.
 
 If the parser recognizes the tag name (e.g., a built-in like `ref()`), it replaces the tag with the resolved value.
 
@@ -500,7 +500,7 @@ import from "./common.bconf" {
 app.name = $app_name // The value here is "My Awesome App"
 ```
 
-An import instruction must be `true`, `false`, or an `as()` tagged value. Any other value is invalid. The following is the expected logic for each valid value:
+An import instruction must be `true`, `false`, or an `as()` tag. Any other value is invalid. The following is the expected logic for each valid value:
 
 -   `true` (shorthand or explicit): Imports the actual value of the variable under its original name.
 -   `false`: Does not import the variable.
