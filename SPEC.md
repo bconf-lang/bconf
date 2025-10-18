@@ -40,6 +40,7 @@ Every bconf document must follow these basic rules:
 -   Whitespace refers to spaces and/or tabs
 -   bconf is case-sensitive, so `key` is different from `Key`
 -   Values are not hoisted; variables, imports, etc., must be declared before they are used.
+-   The root of the document is always an object
 
 Key Terms:
 
@@ -121,21 +122,24 @@ key << "another value" // ["value", "another value"]
 
 ### Implicit
 
-An implicit pair is a shorthand for assigning a block value (an object or array) to a key by omitting the `=` operator.
+An implicit pair is a shorthand for assigning an object to a key by omitting the `=` operator.
 
 ```bconf
 // Equivalent to `object = { ... }`
 object {
     key = "value"
 }
-
-// Equivalent to `array = [ ... ]`
-array [
-    "value"
-]
 ```
 
-This shorthand is only for block values. If the operator is omitted for any other value (eg. string, number, etc.) it is a [statement](#statement).
+This shorthand is only for objects. If the operator is omitted for any other value (eg. array, string, number, etc.) it is a [statement](#statement).
+
+A key without a value is shorthand for assigning `true`.
+
+```bconf
+// Equivalent to `enabled = true`
+enabled
+port = 8080
+```
 
 ## Keys
 
@@ -330,13 +334,17 @@ For implementations where a direct null equivalent is absent or discouraged (e.g
 
 ## Objects
 
-An object is a collection of key-value pairs wrapped in curly braces (`{}`). Pairs can be separated by newlines or commas. Trailing commas are allowed. A key inside an object without a value is shorthand for `key = true`.
+An object is a collection of key-value pairs and statements wrapped in curly braces (`{}`). Pairs can be separated by newlines or commas. Trailing commas are allowed.
 
 ```bconf
 config {
-    enabled  // Shorthand for `enabled = true`
+    enabled
     host = "localhost",
     port = 8080
+
+    hooks ondeploy {
+        channel = "#deployments"
+    }
 }
 
 // Objects can also be defined inline.

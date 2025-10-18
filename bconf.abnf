@@ -13,13 +13,13 @@
 ; defined by their behaviour and specific implementation.
 
 bconf	= OWSP [ item *( 1*NEWLINE OWSP item ) ] OWSP
-item	= key-value / statement / comment
+item	= key-value / statement / key / comment
 
 ; -----------------------
 ; Core Statements
 ; -----------------------
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
-key-value		=/ key OWSP block
+key-value		=/ key OWSP object
 statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
 statement-item	= value / key
 comment			= "//" *( comment-char )
@@ -32,7 +32,7 @@ primitive		= string / number / bool / null
 block			= object / array
 tag	= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
 object			= LBRACE OWSP [ object-member *( block-sep object-member ) [ OWSP COMMA ] ] OWSP RBRACE
-object-member	= OWSP ( key-value / key / comment ) OWSP
+object-member	= OWSP item OWSP
 array			= LBRACKET OWSP [ value *( block-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
 block-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
 
