@@ -143,7 +143,7 @@ port = 8080
 
 ## Keys
 
-Keys are always interpreted as strings and can be alphanumeric, quoted, or dynamic. Keys can be chained using a dot (`.`) to create nested objects.
+Keys are always interpreted as strings and can be alphanumeric or quoted. Keys can be chained using a dot (`.`) to create nested objects.
 
 Alphanumeric keys can contain ASCII letters, ASCII numbers, underscores, and dashes (`A-Za-z0-9_-`). A key made only of digits (e.g., 1234) is still a string.
 
@@ -153,7 +153,7 @@ alphanumeric-key = "value"
 1234 = "value" // The key is the string "1234"
 ```
 
-Quoted keys are string literals (single or multi-line) used as keys. They follow the same rules as string values and are useful for keys containing special characters. Although multiline strings are allowed, it is discouraged as it can be harder to read and should only be used when necessary.
+Quoted keys are a single-line string used as a key. They follow the same rules as string values and are useful for keys containing special characters, or dynamic keys using value substitution. Multi-line strings are invalid.
 
 ```bconf
 "string key" = "value"
@@ -161,28 +161,10 @@ Quoted keys are string literals (single or multi-line) used as keys. They follow
 "${$some-variable}_value" = "value"
 "127.0.0.0" = "value"
 "$ref" = "value"
+
+// INVALID: Multi-line string
 """multiline
     string key""" = "value"
-```
-
-Dynamic keys are wrapped in square brackets (`[]`) and use a variable or tag that resolves to a string. If the variable or tag cannot be resolved to a string, it is invalid.
-
-```bconf
-$variable = "bar"
-$object_variable = {
-    foo = "bar"
-}
-
-foo {
-    // The key becomes "bar", making this equivalent to `foo.bar = "baz"`
-    [$variable] = "baz"
-
-    // The key becomes the string "123", making this `foo.123 = "value"`
-    [string(123)] = "value"
-
-    // INVALID: Variable used for the dynamic key is an object, which cannot resolve to a valid key
-    [$object_variable] = "object variable"
-}
 ```
 
 Dotted keys are a sequence of keys joined by a dot. Any type of key can be used in a dotted key.
@@ -192,24 +174,21 @@ Dotted keys are a sequence of keys joined by a dot. Any type of key can be used 
 a.b.c = "value"
 
 // Any key type can be used in the chain.
-a."b".[$c] = "value"
+a."b".c = "value"
 ```
 
-Keys cannot be empty. This applies to quoted strings and dynamic keys that resolve to an empty string.
+Keys cannot be empty. This applies to quoted keys that resolve to an empty string.
 
 ```bconf
 // INVALID: Value assignment with no key
 = "value"
 
-// INVALID: Empty single-line string
+// INVALID: Empty quoted key
 "" = "value"
 
-// INVALID: Empty multi-line string
-"""""" = "value"
-
 $empty_string_var = ""
-// INVALID: Variable resolves to an empty string
-[$empty_string_var] = "value"
+// INVALID: Quoted key with value substitution resolves to an empty string
+"${$empty_string_var}" = "value"
 ```
 
 ## Strings

@@ -30,7 +30,7 @@ comment			= "//" *( comment-char )
 value			= primitive / block / tag / variable-key
 primitive		= string / number / bool / null
 block			= object / array
-tag	= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
+tag				= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
 object			= LBRACE OWSP [ object-member *( block-sep object-member ) [ OWSP COMMA ] ] OWSP RBRACE
 object-member	= OWSP item OWSP
 array			= LBRACKET OWSP [ value *( block-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
@@ -40,12 +40,11 @@ block-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
 ; Keys & Variables
 ; -----------------------
 key					= access-key *( ( PERIOD access-key ) / array-accessor )
-access-key			= base-key / variable-key / dynamic-key
-base-key			= alphanumeric-key / string
+access-key			= base-key / variable-key
+base-key			= alphanumeric-key / singleline-string
 array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
 variable-key		= DOLLARSIGN alphanumeric-key
 variable-path		= variable-key *( ( PERIOD access-key ) / array-accessor )
-dynamic-key			= LBRACKET OWSP expression OWSP LBRACKET
 alphanumeric-key	= 1*( ALPHA / DIGIT / HYPHEN-MINUS / UNDERSCORE )
 expression			= variable-path / tag
 
