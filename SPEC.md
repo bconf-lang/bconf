@@ -41,11 +41,7 @@ Every bconf document must follow these basic rules:
 -   bconf is case-sensitive, so `key` is different from `Key`
 -   Values are not hoisted; variables, imports, etc., must be declared before they are used.
 -   The root of the document is always an object
-
-Key Terms:
-
 -   A primitive value is a simple, single value. These are `strings`, `numbers`, `booleans`, or `null`.
--   A block value is a container for other values. These are `objects` and `arrays`
 
 ## Comments
 
@@ -74,14 +70,14 @@ A value must be one of the following types:
 -   [Tags](#tags)
 -   [Variables](#variables)
 
-Every key be assigned a value. A key declaration without a value is invalid
+Every key must be assigned a value. A key declaration without a value is invalid.
 
 ```bconf
-// INVALID: No value is assigned to the key.
+// INVALID: Open key assignment
 open_key =
 ```
 
-Pairs must be terminated by a newline (or EOF). Comments at the end of the line are valid
+Pairs must be terminated by a newline (or EOF). Comments at the end of the line are valid.
 
 ```bconf
 // INVALID: Two pairs on the same line.
@@ -133,7 +129,7 @@ object {
 
 This shorthand is only for objects. If the operator is omitted for any other value (eg. array, string, number, etc.) it is a [statement](#statement).
 
-A key without a value is shorthand for assigning `true`.
+A bare key without an operator or value is shorthand for assigning `true`.
 
 ```bconf
 // Equivalent to `enabled = true`
@@ -143,9 +139,9 @@ port = 8080
 
 ## Keys
 
-Keys are always interpreted as strings and can be alphanumeric or quoted. Keys can be chained using a dot (`.`) to create nested objects.
+Keys are always interpreted as strings and can be alphanumeric or quoted. Keys can be chained using a dot (`.`) or an array index accessor (`[]`) to create nested structures.
 
-Alphanumeric keys can contain ASCII letters, ASCII numbers, underscores, and dashes (`A-Za-z0-9_-`). A key made only of digits (e.g., 1234) is still a string.
+Alphanumeric keys can contain ASCII letters, ASCII numbers, underscores, and dashes (`A-Za-z0-9_-`). A key made only of digits (eg. 1234) is still a string.
 
 ```bconf
 key = "value"
@@ -175,6 +171,36 @@ a.b.c = "value"
 
 // Any key type can be used in the chain.
 a."b".c = "value"
+```
+
+Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a non-negative, zero-based integer wrapped in square brackets (`[]`).
+
+An index accessor must always be associated with a key; it cannot stand alone. It is invalid to use an index accessor on a key that holds a non-array value, such as an object, string, or number.
+
+If the key does not yet exist, a new array is created. If an index is assigned beyond the array's current bounds, the array will be padded with `null` values (or an equivalent) to accommodate the new value at the specified position.
+
+```bconf
+// Create a new array and assign a value at index 1
+// new_list becomes [null, "world"]
+new_list[1] = "world"
+
+// Overwrite a value in an existing array
+new_list[1] = "bconf" // new_list is now [null, "bconf"]
+
+// Use with dotted keys to create nested structures
+data.users[0] = "Alice" // data.users becomes ["Alice"]
+
+// INVALID: Index cannot be negative
+data.users[-1] = "Bob"
+
+// INVALID: Index accessor must be attached to a key
+[0] = "value"
+
+// Given this non-array value:
+not_an_array = "hello"
+
+// INVALID: Cannot use an index accessor on a string
+not_an_array[0] = "H"
 ```
 
 Keys cannot be empty. This applies to quoted keys that resolve to an empty string.
@@ -212,7 +238,7 @@ key = """
 """
 ```
 
-The following escape sequences are reserved. Using any other escape sequence (e.g., `\a`) is invalid.
+The following escape sequences are reserved. Using any other escape sequence (eg. `\a`) is invalid.
 
 ```
 \"          - quotation mark
@@ -240,7 +266,7 @@ key = "This is a string using an ${$variable}!"
 
 ## Numbers
 
-Numbers can be integers or floats. Negative numbers are prefixed with `-` and positive numbers can be prefixed with `+`. If there is no prefix, the number is positive by default. Leading zeros are not allowed (e.g., `07` is invalid).
+Numbers can be integers or floats. Negative numbers are prefixed with `-` and positive numbers can be prefixed with `+`. If there is no prefix, the number is positive by default. Leading zeros are not allowed (eg. `07` is invalid).
 
 ```bconf
 int1 = 42
@@ -312,7 +338,7 @@ The `null` value represents the absence of a value and must be lowercase.
 null1 = null
 ```
 
-For implementations where a direct null equivalent is absent or discouraged (e.g., Go's `nil` with non-pointer types), parsers may omit keys with null values from the final output.
+For implementations where a direct null equivalent is absent or discouraged (eg. Go's `nil` with non-pointer types), parsers may omit keys with null values from the final output.
 
 ## Objects
 
@@ -356,9 +382,9 @@ mixed_array = [
 
 ## Statements
 
-Statements are a special syntax for creating configurations that read like sentences. A statement consists of a key followed by a series of values separated by whitespace.
+Statements provide a special syntax for creating configurations that read like a sentence or command. A statement consists of a key followed by a series of space-separated values.
 
-Defining a statement with the same key multiple times appends a new list of values, resulting in a 2D array, rather than overwriting.
+Defining a statement with the same key multiple times appends a new list of values to a 2D array, rather than overwriting the previous entry.
 
 For example, this:
 
@@ -378,42 +404,51 @@ Is parsed into a structure like this (represented as JSON):
 }
 ```
 
-All primitive values, objects, arrays, tags and variables are allowed as values. Single, alphanumeric keys are also permitted and should be treated as unquoted strings so dotted keys or array accessors are invalid. When parsing, a value should be matched as a key last. This allows values like `123` and `123.456` to be parsed as an integer and float respectively despite being considered a valid key.
+The values following the key in a statement can be any of the following types:
+
+-   Primitives
+-   Objects
+-   Arrays
+-   Tags
+-   Variables
+-   Unquoted Strings: A sequence of characters matching the alphanumeric key syntax (eg. `from`, `my-key`) is permitted and parsed as a simple string. Dotted keys and array index accessors are not allowed as unquoted string values.
+
+To avoid ambiguity, implementations must prioritize matching standard value types first. For instance, `true` will always be parsed as a boolean, and `123` as a number. Only if a value does not match any other type will it be treated as an unquoted string.
 
 Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`). A key followed directly by an object is an [implicit key-value](#implicit) pair.
 
 ## Tags
 
-Tags act like functions that process or generate a value. The syntax is a tag followed by a value in parentheses, like `tag_name(value)`.
+Tags act like functions that process or generate a value during parsing.
 
-If the parser recognizes the tag name (e.g., a built-in like `ref()`), it replaces the tag with the resolved value.
+The syntax is a tag name followed by a single argument enclosed in parentheses, like `tag_name(argument)`. The argument can be any valid value, including a key path with dots and array indexers (eg. `server.ports[0]`).
+
+If the parser recognizes the tag name (eg. a built-in like `ref()`), it replaces the tag with the resolved value.
 
 ```bconf
 // ref() resolves to the value at the specified path.
 default_port = ref(server.port)
 ```
 
-If the parser encounters an unrecognized tag, it serializes it as a tuple: `[tag_name, value]`. This allows applications to handle custom logic.
+If the parser encounters an unrecognized tag, it treats it as a custom tag. Instead of resolving it, the parser serializes it as a tuple: `[tag_name, argument]`. When the argument is a key path, it's serialized as a string. This allows the application itself to implement custom logic after the file has been parsed.
 
-For example, a custom date tag:
+For example:
 
 ```bconf
+// This allows an application to implement its own date parsing
+// It would be parsed to: ["date", "2025-10-09"]
 last_login = date("2025-10-09")
+
+// A custom tag using a key path as an argument
+// It would be parsed to: ["to_upper", "app.name"]
+capitalized_name = to_upper(app.name)
 ```
 
-Would be parsed into a structure like:
-
-```json
-{
-	"last_login": ["date", "2025-10-09"]
-}
-```
-
-Implementations may optionally provide an option to extend a lookup table to resolve custom tags during parsing, but this is not a required.
+Implementations may optionally allow users to register their own custom tags with the parser, enabling them to be resolved at parse-time. However, this is not required.
 
 ## Variables
 
-Variables let you define a value once and reuse it. A variable name must start with a dollar sign (`$`) and must be defined before it is used. Variable definitions are not included in the final parsed output.
+Variables let you define a value once and reuse it. They follow the same rules as a standard key-value pair, however, a variable name must start with a dollar sign (`$`) and must be defined before it is used. Variable definitions are not included in the final parsed output.
 
 ```bconf
 $default_port = 8080
@@ -422,6 +457,13 @@ server.port = $default_port // Value becomes 8080.
 // INVALID: $hostname is used before it is defined.
 server.host = $hostname
 $hostname = "localhost"
+
+// VALID: You can redefine a variable. Any use of the variable will now have the value be 443
+$default_port = 443
+
+// VALID: Append operator can also be used
+$allowed_origins << "test.com"
+origins = $allowed_origins // Value becomes ["test.com"]
 ```
 
 Variables are scoped. A variable defined inside an object is only accessible within that object and its descendants.
@@ -440,7 +482,7 @@ default_port = $port
 
 ## Built-ins
 
-Implementations are expected to implement the following built-in functionality. These are a mix of reserved keys and tags.
+Parsers are expected to implement the following built-in functionality. These are a mix of reserved keys and tags.
 
 ### Reserved Keys
 
@@ -448,7 +490,7 @@ Implementations are expected to implement the following built-in functionality. 
 
 Syntax: `import from "path/to/file.bconf" { $var1, $var2, ... }`
 
-The `import` statement allows for imports variables defined in other bconf files for use within the current file. Only local file paths are supported (relative or absolute). `import` statements must defined before their variables can be used.
+The `import` statement allows for importing variables defined in other bconf files for use within the current file. Only local file paths are supported (relative or absolute). `import` statements must be defined before their variables can be used.
 
 ```bconf
 // INVALID: Cannot use $app_name before it has been imported
@@ -458,10 +500,10 @@ import from "./common.bconf" { $app_name }
 name = $app_name
 ```
 
-It's important to understand the difference between a variable's actual value (the data to be imported and what should actually be used) and the import instruction (the values assigned to the variable inside the object).
+It's important to understand the difference between a variable's actual value (the data to be imported and what should actually be used) and the import instruction (the values assigned to the variable inside the import statement object).
 
 -   Actual Value: This is the value defined for the variable in the source file. It's the value that will be made available in your current file.
--   Import Instruction: This is the value assigned to the variable inside the import statement object.
+-   Import Instruction: This is the value assigned to the variable inside the import statement object. This defines what/how a variable should be imported
 
 ```bconf
 // common.bconf
@@ -479,11 +521,11 @@ import from "./common.bconf" {
 app.name = $app_name // The value here is "My Awesome App"
 ```
 
-An import instruction must be `true`, `false`, or an `as` statement. Any other value is invalid. The following is the expected logic for each valid value:
+An import instruction must be `true`, `false`, or an `alias statement`. Any other value or statement is invalid. The following is the expected logic for each valid value:
 
 -   `true` (shorthand or explicit): Imports the actual value of the variable under its original name.
 -   `false`: Does not import the variable.
--   `$variable as $aliased`: Imports the actual value of the variable under a new alias specified after `as`.
+-   `$variable as $aliased` (alias statement): Imports the actual value of the variable under a new alias specified after `as`.
 
 ```bconf
 import from "path/to/file.bconf" {
@@ -493,7 +535,7 @@ import from "path/to/file.bconf" {
     // VALID: Explicitly imports $explicit_true using its original name.
     $explicit_true = true
 
-    // VALID: Imports $original and renames it to $new_alias.
+    // VALID: Imports the actual value of $original to be used as $new_alias.
     $original as $new_alias
 
     // VALID: The value `false` is used to skip imports. Although valid,
@@ -508,6 +550,28 @@ import from "path/to/file.bconf" {
 }
 ```
 
+Variables with the same name cannot be imported more than once or conflict with a variable previously defined with the same name. However, it is valid to redefine a variable with the same name as one that has previously been imported.
+
+```bconf
+$foo = "foo"
+
+import from "path/to/file" {
+    $variable
+
+    // INVALID: $variable is already being imported above
+    $variable
+
+    // VALID: $variable is being aliased as $aliased
+    $variable as $aliased
+
+    // INVALID: conflicts with the previously defined $foo variable
+    $foo
+}
+
+// VALID: $aliased is being redefined after it has been imported (this is discouraged though)
+$aliased = "aliased"
+```
+
 #### export
 
 Syntax: `export vars { $var1, $var2, ... }`
@@ -516,10 +580,10 @@ The `export` statement makes variables from the current file available for other
 
 Inside the object, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` statement, there is the actual value and export instruction.
 
-An export instruction is `true` or an `as` statement. Any other value can immediately be considered an inline definition. Any other statement is invalid. The following is the expected logic for each valid export instruction:
+An export instruction is `true` or an `alias statement`. Any other value can immediately be considered as an inline definition. Any other statement is invalid. The following is the expected logic for each valid export instruction:
 
--   `true`: If there is a variable defined with the same name in the document, it is considered a reference. Otherwise, if there is no matching name, it is an inline definition where the value is `true`
--   `$variable as $alias`: Exports the actual value for `$variable` under the `$alias` name
+-   `true` (shorthand or explicit): If there is a variable defined before the export statement with the same name in the document, it is considered a reference. Otherwise, if there is no matching name, it is an inline definition where the value is `true`.
+-   `$variable as $alias` (alias statement): Exports the actual value of the variable under a new alias specified after `as`.
 
 ```bconf
 $app_name = "My App"
@@ -571,13 +635,13 @@ export vars {
 
 Syntax: `extends "path/to/base/file.bconf"`
 
-It inserts the resolved contents of the extended file at its location. This means all variables, tags, and other built-ins in the extended file must be processed first, leaving only the final key-value structure to be inserted. The "last key wins" rule still applies.
+The `extends` statement inserts the resolved contents of the extended file at its location. This means all variables, tags, and other built-ins in the extended file must be processed first, leaving only the final key-value structure to be inserted. The "last key wins" rule still applies.
 
 ```bconf
-// -- base.bconf
+// base.bconf
 env = "development"
 
-// -- prod.bconf
+// prod.bconf
 extends "./base.bconf" // Inserts `env = "development"` here.
 env = "production" // Overwrites the value of `env`.
 
@@ -593,16 +657,24 @@ extends "./base.bconf"
 
 #### ref()
 
-References a value at a specified key path within the document. Referencing a non-existent key is invalid. Variables should always be preferred, however, this is useful for situations where the data is not accessible through a variable. For example, referencing a value from an extended document where a variable is not exported.
+References a value at a specified key path within the document. The argument must be a key path. References to an undefined key or value is invalid. Variables should always be preferred, however, this is useful for situations where the data is not accessible through a variable. For example, referencing a value from an extended document where a variable is not exported.
 
 ```bconf
 server.port = 8080
 default_port = ref(server.port) // Resolves to 8080.
+
+// INVALID: Key has not previously been defined
+app_name = ref(app.name)
+
+cors.allowed_origins << "test.com"
+
+// INVALID: Referencing a value that does not exist. Only index 0 has a value
+host = ref(cors.allowed_origins[1])
 ```
 
 #### env()
 
-Reads the value of an operating system environment variable. The variable name must be a string. It is invalid if the environment variable does not exist.
+Reads the value of an operating system environment variable. The argument must be a string. It is invalid if the environment variable does not exist when parsing.
 
 ```bconf
 environment = env("APP_ENV")
@@ -612,7 +684,7 @@ environment = env("APP_ENV")
 
 Converts a value to its string representation.. The following are valid values which can be converted to a string - any other value is invalid:
 
--   `variable`: These should be resolved first and then follow the rules below
+-   `variable` / `tag`: These should be resolved first and then follow the rules below
 -   `number`: The value should be quoted (eg. `"123"`, `"123.45"`, `"123.45e6"`)
 -   `boolean`: The value should be quoted (eg. `"true"`, `"false"`)
 -   `null`: The value should be quoted (eg. `"null"`)
@@ -631,9 +703,9 @@ string_tag6 = string($variable) // "321"
 
 #### number()
 
-Converts a value to a number, inferring integer or float type. The following are valid values which can be converted to a number - any other value is invalid:
+Converts a value to a number, inferring an integer or float type. The following are valid values which can be converted to a number - any other value is invalid:
 
--   `variable`: These should be resolved first and then follow the rules below
+-   `variable` / `tag`: These should be resolved first and then follow the rules below
 -   `true`: Always resolves to `1`
 -   `false`: Always resolves to `0`
 -   `null`: Always resolves to `0`
@@ -660,12 +732,12 @@ To convert specifically to an integer or float, see [int()](#int) and [float()](
 
 Converts a value to an integer. The following are valid values which can be converted to a integer - any other value is invalid:
 
--   `variable`: These should be resolved first and then follow the rules below
+-   `variable` / `tag`: These should be resolved first and then follow the rules below
 -   `true`: Always resolves to `1`
 -   `false`: Always resolves to `0`
 -   `null`: Always resolves to `0`
--   `string`: A string must follow a number syntax. If there is any other character, it is invalid. It should first be converted to it correct number type (float or integer) and then follow the rules below.
--   `float`: The value is truncated. Exponents must be evaluated first before truncating the value.
+-   `string`: A string must follow a number syntax. If there is any other character, it is invalid. It should first be converted to its correct number type (float or integer) and then follow the rules below
+-   `float`: The value is truncated. Exponents must be evaluated first before truncating the value
 -   `integer`: There is nothing needed for converting an int to an int. It should resolve to the same value
 
 ```bconf
@@ -684,9 +756,9 @@ int_tag9 = int("-123_456") // -123456
 
 #### float()
 
-Converts a value to a floating-point number. The following are valid values which can be converted to a float - any other value is invalid:
+Converts a value to a float. The following are valid values which can be converted to a float - any other value is invalid:
 
--   `variable`: These should be resolved first and then follow the rules below
+-   `variable` / `tag`: These should be resolved first and then follow the rules below
 -   `true`: Always resolves to `1.0`
 -   `false`: Always resolves to `0.0`
 -   `null`: Always resolves to `0.0`
@@ -712,10 +784,10 @@ float_tag9 = float("-123_456") // -123456.0
 
 Converts a value to a boolean. The following are valid values which can be converted to a boolean - any other value is invalid:
 
--   `variable`: These should be resolved first and then follow the rules below
+-   `variable` / `tag`: These should be resolved first and then follow the rules below
 -   `null`: Always resolves to `false`
 -   `string`: Non-empty strings always resolve to `true`, while empty strings are `false`
--   `number`: Any non-zero number always resolved to `true` (including negatives). Only `0` resolves to `false`
+-   `number`: Any non-zero number always resolved to `true` (including negatives). Only `0`, `0.0` and `-0.0` resolve to `false`
 -   `boolean`: There is nothing needed for converting a boolean to a boolean. It should resolve to the same value
 
 ```bconf
