@@ -240,15 +240,17 @@ key = "This is a string using an ${$variable}!"
 
 ## Numbers
 
-Numbers can be integers or floats. Negative numbers are prefixed with `-`. Leading zeros are not allowed (e.g., `07` is invalid).
+Numbers can be integers or floats. Negative numbers are prefixed with `-` and positive numbers can be prefixed with `+`. If there is no prefix, the number is positive by default. Leading zeros are not allowed (e.g., `07` is invalid).
 
 ```bconf
 int1 = 42
 int2 = 0
 int3 = -17
+int4 = +17
 
 float1 = -1.0
-float2 = 3.14159
+float2 = +1.0
+float3 = 3.14159
 ```
 
 Underscores (`_`) can be used as separators for readability. They cannot be leading, trailing, or appear next to another underscore.
@@ -271,6 +273,7 @@ Floats support scientific notation using `e` or `E`, followed by an integer expo
 exponent1 = 1.2e10
 exponent2 = 1.2E10
 negative_exponent = -2e-2
+positive_explicit_exponent = 2e+2
 fraction_and_exponent = -5.43e2
 
 // INVALID: Trailing exponent identifier without an integer following
@@ -290,7 +293,7 @@ invalid_float_2 = 4.
 invalid_float_3 = 4.e10
 ```
 
-Special float values like NaN and Infinity are not supported.
+Float values `-0.0` and `+0.0` are valid and should map according to IEEE 754. Special float values like NaN and Infinity are not supported.
 
 ## Boolean
 
@@ -334,7 +337,7 @@ inline_object = { enabled, port = 8080 }
 
 An array is an ordered list of values wrapped in square brackets (`[]`). Like objects, values can be separated by newlines or commas, and trailing commas are allowed. Arrays can contain a mix of value types.
 
-Arrays can only contain primitive values, block values, variables and tags. Any other value is invalid.
+Arrays can only contain primitive values, objects, arrays, variables and tags. Any other value is invalid.
 
 ```bconf
 // An array of strings
@@ -388,7 +391,7 @@ The following are valid values for statements:
 -   [Tags](#tags)
 -   [Variables](#variables)
 
-Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`) or array (`[`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
+Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`). A key followed directly by an object is an [implicit key-value](#implicit) pair.
 
 ## Tags
 

@@ -27,9 +27,8 @@ comment			= "//" *( comment-char )
 ; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / block / tag / variable-key
+value			= primitive / object / array / tag / variable-key
 primitive		= string / number / bool / null
-block			= object / array
 tag				= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
 object			= LBRACE OWSP [ object-member *( block-sep object-member ) [ OWSP COMMA ] ] OWSP RBRACE
 object-member	= OWSP item OWSP
@@ -55,10 +54,11 @@ singleline-string	= DQUOTE *( string-char / escaped-char / embedded-value ) DQUO
 multiline-string	= 3DQUOTE *( multiline-char / escaped-char / embedded-value ) 3DQUOTE
 
 number			= float / integer
-integer			= [ HYPHEN-MINUS ] dec-int
-float			= [ HYPHEN-MINUS ] ( ( dec-int PERIOD [ dec-int ] [ exponent ] ) / ( dec-int exponent ) )
+number-prefix	= HYPHEN-MINUS / PLUS
+integer			= [ number-prefix ] dec-int
+float			= [ number-prefix ] ( ( dec-int PERIOD [ dec-int ] [ exponent ] ) / ( dec-int exponent ) )
 dec-int			= DIGIT *( [ UNDERSCORE ] DIGIT )
-exponent		= "e" [ HYPHEN-MINUS ] dec-int
+exponent		= "e" integer
 
 bool			= %s"true" / %s"false"
 null			= %s"null"
@@ -99,6 +99,7 @@ COMMA			= ","
 PERIOD			= "."
 DOLLARSIGN		= "$"
 HYPHEN-MINUS	= "-"
+PLUS			= "+"
 UNDERSCORE 		= "_"
 
 ; -----------------------
