@@ -378,18 +378,7 @@ Is parsed into a structure like this (represented as JSON):
 }
 ```
 
-The following are valid values for statements:
-
--   [Keys](#keys)
-    -   **NOTE** as a value, these are considered unquoted strings and not actual keys. The same character rules for keys still apply.
--   [Strings](#strings)
--   [Numbers](#numbers)
--   [Boolean](#boolean)
--   [Null](#null)
--   [Objects](#objects)
--   [Arrays](#arrays)
--   [Tags](#tags)
--   [Variables](#variables)
+All primitive values, objects, arrays, tags and variables are allowed as values. Single, alphanumeric keys are also permitted and should be treated as unquoted strings so dotted keys or array accessors are invalid. When parsing, a value should be matched as a key last. This allows values like `123` and `123.456` to be parsed as an integer and float respectively despite being considered a valid key.
 
 Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`). A key followed directly by an object is an [implicit key-value](#implicit) pair.
 

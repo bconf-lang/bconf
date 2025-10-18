@@ -21,7 +21,7 @@ item	= key-value / statement / key / comment
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
 key-value		=/ key OWSP object
 statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
-statement-item	= value / key
+statement-item	= value / variable-path / alphanumeric-key
 comment			= "//" *( comment-char )
 
 ; -----------------------
