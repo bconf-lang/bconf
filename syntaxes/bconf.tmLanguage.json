@@ -10,7 +10,10 @@
 			"include": "#keyval"
 		},
 		{
-			"include": "#node"
+			"include": "#statement"
+		},
+		{
+			"include": "#key"
 		}
 	],
 	"repository": {
@@ -18,37 +21,34 @@
 			"name": "comment.line.double-slash.bconf",
 			"match": "//.*"
 		},
-		"node": {
-			"name": "meta.node.bconf",
+		"statement": {
+			"name": "meta.statement.bconf",
 			"begin": "([a-zA-Z0-9_\\-\\.\\$\"\\(\\)\\[\\]]+)(?=[ \\t]+(?![\\{\\[=]|<<))",
 			"beginCaptures": {
 				"1": {
-					"patterns": [
-						{
-							"include": "#key"
-						}
-					]
+					"patterns": [{ "include": "#key" }]
 				}
 			},
 			"end": "(?=$|//)",
 			"patterns": [
 				{
+					"name": "invalid.illegal.dot.bconf",
+					"match": "(?:[a-zA-Z0-9_-]+|\"[^\"\\n]*\")\\[\\d+\\](?:\\.(?:[a-zA-Z0-9_-]+|\"[^\"\\n]*\")(?:\\[\\d+\\])?)*|(?:[a-zA-Z0-9_-]+|\"[^\"\\n]*\")\\.(?:[a-zA-Z0-9_-]+|\"[^\"\\n]*\")(?:\\[\\d+\\])?(?:\\.(?:[a-zA-Z0-9_-]+|\"[^\"\\n]*\")(?:\\[\\d+\\])?)*"
+				},
+				{
 					"include": "#value"
 				},
 				{
-					"name": "string.unquoted.node.bconf",
+					"name": "string.unquoted.statement.bconf",
 					"match": "[a-zA-Z0-9_-]+"
-				},
-				{
-					"include": "#key"
 				}
 			]
 		},
 		"keyval": {
 			"name": "meta.key-value.bconf",
-			"begin": "([a-zA-Z0-9_\\-\\.\\$\\\"\\(\\)\\[\\]]+)(?=[ \\t]*(?=[\\[\\{=]|<<))",
+			"begin": "(?:\\\".*\\\"|\\$?[a-zA-Z0-9_-]+(?:\\[[+-]?\\d+\\])?\\.?)+(?=[ \\t]*(?=[\\{=]|<<))",
 			"beginCaptures": {
-				"1": {
+				"0": {
 					"patterns": [
 						{
 							"include": "#key"
@@ -56,7 +56,7 @@
 					]
 				}
 			},
-			"end": "(?=$|//)",
+			"end": "(?=$|//|,|\\}|\\])",
 			"patterns": [
 				{
 					"name": "punctuation.assignment.equals.bconf",
@@ -75,6 +75,10 @@
 			"name": "meta.key.bconf",
 			"patterns": [
 				{
+					"name": "invalid.illegal.key.bconf",
+					"match": "\\b(true|false|null)\\b"
+				},
+				{
 					"name": "punctuation.separator.dot.bconf",
 					"match": "\\."
 				},
@@ -82,33 +86,13 @@
 					"include": "#variable_key"
 				},
 				{
-					"include": "#dynamic_key"
-				},
-				{
 					"include": "#alphanumeric_key"
 				},
 				{
-					"include": "#string"
+					"include": "#singleline_string"
 				},
 				{
-					"name": "meta.key.array-index.bconf",
-					"begin": "\\[(?=\\-?(?:\\d(?:_?\\d)*)\\])",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.key.array-index.begin.bconf"
-						}
-					},
-					"end": "\\]",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.key.array-index.end.bconf"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#integer"
-						}
-					]
+					"include": "#array_index_accessor"
 				}
 			]
 		},
@@ -120,28 +104,50 @@
 			"name": "entity.name.tag.alphanumeric.bconf",
 			"match": "[a-zA-Z0-9_-]+"
 		},
-		"dynamic_key": {
-			"name": "meta.key.dynamic.bconf",
-			"begin": "\\[(?=[^\\]]*[a-zA-Z][^\\]]*)",
+		"array_index_accessor": {
+			"name": "meta.key.array-index.bconf",
+			"begin": "\\[(?=\\-?(?:\\d(?:_?\\d)*)\\])",
 			"beginCaptures": {
 				"0": {
-					"name": "punctuation.definition.dynamic-key.begin.bconf"
+					"name": "punctuation.definition.key.array-index.begin.bconf"
 				}
 			},
 			"end": "\\]",
 			"endCaptures": {
 				"0": {
-					"name": "punctuation.definition.dynamic-key.end.bconf"
+					"name": "punctuation.definition.key.array-index.end.bconf"
 				}
 			},
 			"patterns": [
 				{
-					"include": "#expression"
+					"comment": "This is the #integer rule without allowing a prefix",
+					"name": "constant.numeric.integer.bconf",
+					"match": "\\d+(?:_\\d+)*"
 				}
 			]
 		},
 		"value": {
 			"name": "meta.value.bconf",
+			"patterns": [
+				{
+					"include": "#primitive_value"
+				},
+				{
+					"include": "#object"
+				},
+				{
+					"include": "#array"
+				},
+				{
+					"include": "#tag"
+				},
+				{
+					"include": "#variable_key"
+				}
+			]
+		},
+		"primitive_value": {
+			"name": "meta.value.primitive.bconf",
 			"patterns": [
 				{
 					"include": "#string"
@@ -154,15 +160,6 @@
 				},
 				{
 					"include": "#null"
-				},
-				{
-					"include": "#block"
-				},
-				{
-					"include": "#tagged_value"
-				},
-				{
-					"include": "#variable_key"
 				}
 			]
 		},
@@ -186,21 +183,11 @@
 		},
 		"integer": {
 			"name": "constant.numeric.integer.bconf",
-			"match": "-?\\d+(?:_\\d+)*\\b"
+			"match": "[+-]?\\d+(?:_\\d+)*"
 		},
 		"float": {
 			"name": "constant.numeric.float.bconf",
-			"match": "-?(?:\\d+(?:_\\d+)*\\.\\d+(?:_\\d+)*|\\.\\d+(?:_\\d+)*)(?:[eE][+-]?\\d+(?:_\\d+)*)?\\b"
-		},
-		"block": {
-			"patterns": [
-				{
-					"include": "#object"
-				},
-				{
-					"include": "#array"
-				}
-			]
+			"match": "[+-]?(?:\\d+(?:_\\d+)*)(?:\\.(?:\\d+(?:_\\d+)*))*(?:[eE][+-]?(?:\\d+(?:_\\d+)*))?"
 		},
 		"block_sep": {
 			"name": "punctuation.separator.block.bconf",
@@ -225,13 +212,16 @@
 					"include": "#block_sep"
 				},
 				{
+					"include": "#comment"
+				},
+				{
 					"include": "#keyval"
 				},
 				{
-					"include": "#key"
+					"include": "#statement"
 				},
 				{
-					"include": "#comment"
+					"include": "#key"
 				}
 			]
 		},
@@ -264,44 +254,50 @@
 		"string": {
 			"patterns": [
 				{
-					"name": "string.quoted.triple.bconf",
-					"begin": "\"\"\"",
-					"end": "\"\"\"",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.string.begin.bconf"
-						}
-					},
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.string.end.bconf"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#string_chars"
-						}
-					]
+					"include": "#multiline_string"
 				},
 				{
-					"name": "string.quoted.double.bconf",
-					"begin": "\"",
-					"end": "\"",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.definition.string.begin.bconf"
-						}
-					},
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.definition.string.end.bconf"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#string_chars"
-						}
-					]
+					"include": "#singleline_string"
+				}
+			]
+		},
+		"singleline_string": {
+			"name": "string.quoted.double.bconf",
+			"begin": "\"",
+			"end": "\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.bconf"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.bconf"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#string_chars"
+				}
+			]
+		},
+		"multiline_string": {
+			"name": "string.quoted.triple.bconf",
+			"begin": "\"\"\"",
+			"end": "\"\"\"",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.bconf"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.bconf"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#string_chars"
 				}
 			]
 		},
@@ -311,6 +307,10 @@
 				{
 					"name": "constant.character.escape.bconf",
 					"match": "\\\\(\"|\\\\|\\$|b|f|n|r|t|u[0-9a-fA-F]{4}|U[0-9a-fA-F]{8})"
+				},
+				{
+					"name": "invalid.illegal.escape.bconf",
+					"match": "\\\\([^\"\\$bfnrtuU\\n\\r])"
 				},
 				{
 					"name": "meta.interpolated.bconf",
@@ -328,13 +328,19 @@
 					},
 					"patterns": [
 						{
-							"include": "#expression"
+							"include": "#primitive_value"
+						},
+						{
+							"include": "#variable_key"
+						},
+						{
+							"include": "#tag"
 						}
 					]
 				}
 			]
 		},
-		"tagged_value": {
+		"tag": {
 			"name": "meta.tagged-value.bconf",
 			"begin": "([a-zA-Z0-9_-]*)\\s*(\\()",
 			"end": "\\)",
@@ -357,16 +363,6 @@
 				},
 				{
 					"include": "#key"
-				}
-			]
-		},
-		"expression": {
-			"patterns": [
-				{
-					"include": "#variable_key"
-				},
-				{
-					"include": "#tagged_value"
 				}
 			]
 		}
