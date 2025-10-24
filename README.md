@@ -9,102 +9,87 @@ For better configuration files
 
 ## Design Principles
 
-bconf is designed with a few key principles in mind: configuration files should be human readable, easy to maintain, flexible and predictable. The syntax and concepts should be familiar and easy to learn, leveraging constructs found in other data-serialization and programming languages.
+bconf is designed with a the following key principles in mind: configuration files should be human readable, easy to maintain, flexible and predictable. The syntax and concepts should be familiar and easy to learn, leveraging constructs found in other data-serialization and programming languages.
 
-Dynamic elements like variables, schemas and extending files should be expressed with existing syntax. All syntax should be deserializable into native data structures that make sense _without_ introducing "invisible" keys/values. This ensures all valid bconf files remain 100% statically parsable with predictable data structures.
+Dynamic elements like variables, tags and extending files should be expressed with existing syntax. All syntax should be deserializable into native data structures that make sense _without_ introducing "invisible" keys/values. This ensures all valid bconf files remain 100% statically parsable with predictable data structures.
 
 ## Example
 
 ```bconf
-// This is an example bconf document mimicking a config file for a CI/CD pipeline
+// This is a bconf file
 
-import from "../common.bconf" { $docker_registry, $alert_channels }
+extends "./base.bconf"
+import from "./secrets.bconf" { $db_user, $db_pass as $database_password }
 
-name = "Build & Deploy"
+$app_name = "An awesome app"
+$env = env("APP_ENV")
 
-// Variables are keys that start with $
-$project_name = "phoenix"
-$CI_COMMIT_SHA = env("CI_COMMIT_SHA")
-
-job_stages = ["build", "test", "deploy"]
-
-default_settings {
-	// Custom tagged values can be declared to be handled in the application layer
-	timeout = duration("10m")
-	max_retries = 0
-
-	// Arrays can be set/accessed with an index
-	runs_on[0] = "linux"
+app {
+    name = $app_name
+    environment = $env
+    features {
+        auth
+    }
 }
 
-// Nested keys are allowed
-jobs.build {
-	name = "Build image"
+server.http.host = "0.0.0.0"
+server.http.port = int(env("PORT"))
 
-	// Bare keys in objects is shorthand for the value being true
-	cancel_in_progress
-
-	// This variable is scoped to the `jobs.build` block
-	$image_name = "${$docker_registry}/${$project_name}:${$CI_COMMIT_SHA}"
-
-	steps {
-		// Nodes can be set inside objects
-		run "echo 'Building Docker image...'"
-		run "docker build -t ${$image_name} ."
-	}
+server.tls {
+    enabled
+    cert_file = "/etc/ssl/certs/app.crt"
+    key_file = "/etc/ssl/private/app.key"
 }
 
-jobs.test {
-	name = "Run tests"
-	max_retries = 3
-
-	// Arrays can have values pushed using `<<`
-	needs << "build"
-	needs << "test"
-
-	steps {
-		run "echo 'Running unit tests...'"
-		run "npm test"
-	}
+database.primary {
+    host = "primary.db.internal"
+    user = $db_user
+    pass = $database_password
+    pool_size = int(env("DB_POOL_SIZE"))
 }
 
-jobs.deploy {
-	$deploy_target = "production"
+database.replicas = [
+    { host = "replica1.db.internal", user = $db_user },
+    { host = "replica2.db.internal", user = $db_user }
+]
 
-	// Custom nodes can be defined
-	hooks onfailure {
-		channels = $alert_channels
-		// Multiline strings are defined with triple quotes
-		message = """
-			❌ Could not deploy to ${$deploy_target}
-			Image: ${ref(jobs.build.$image_name)}
+database.replicas[0].read_only = true
+database.replicas[1].read_only = false
 
-			This may block future deployments if unaddressed - check that everything is working correctly
-		"""
-	}
+plugins << {
+    name = "authentication"
+    config {
+        jwt_secret = env("JWT_SECRET")
+        token_expiry = "1h"
+    }
+}
 
-	// Use a dynamic key to define environment-specific settings.
-	// This block will be evaluated as a 'production' key.
-	[$deploy_target] {
-		replicas = int("3")
+plugins << {
+    name = "cors"
+    config {
+        allowed_origins = ["https://app.example.com", "https://admin.example.com"]
+    }
+}
 
-		steps {
-			// Variables are just special keys, so their values can be referenced as regular data as well
-			run "echo 'Deploying image ${ref(jobs.build.$image_name)} to ${$deploy_target}...'"
-			run "kubectl apply -f deployment.yml"
-			run "echo 'Deployment successful.'"
-		}
-	}
+api_docs_header = """
+    Welcome to the API for \${$app_name}.
+    Host: \${ref(server.http.host)}:\${ref(server.http.port)}
+    Environment: \${$env}
+"""
+
+export vars {
+    $env
+    $app_name as $name
 }
 ```
 
 ## Compared to Other Languages
 
-bconf is a data-serialization format designed to be easy to enhance. Compared to other formats, like JSON, YAML and TOML, bconf is minimal and easy to write. Where it differs is an emphasis on scalability for writing large files and expressive ways to write dynamic features. Features like tagged values and nodes make methods and statements easy to write without it needing to be expressed awkwardly through other data structures. This syntax remains 100% statically deserializable into native data structures.
+bconf is a data-serialization format designed to be easy to enhance. Compared to other formats, like JSON, YAML and TOML, bconf is minimal and easy to write. Where it differs is an emphasis on scalability for writing large files and expressive ways to write dynamic features. Data types like tags and statements make methods and commands easy to write without it needing to be expressed awkwardly through other data structures. This syntax remains 100% statically deserializable into native data structures.
 
-Unlike other data-serialization formats, bconf does not require a strict hierarchy of values to define deeply nested values. Values can be assigned using deeply nested keys and array indexes. Arrays can also have values pushed to it.
+Unlike other data-serialization formats, bconf does not require a strict hierarchy of values to define deeply nested values. Values can be assigned using deeply nested keys and array indexes. Arrays can also have values pushed to it with an append operator.
 
-Features often used in tandem when creating configuration with data-serialization formats, such as extending files and schemas, are typically implementation specific and non-portable. However, features like this are standardized in bconf, ensuring the same set of features can be used regardless of parser or language.
+Features often used in tandem when creating configuration with data-serialization formats, such as extending files and referencing other values, are typically implementation specific and non-portable. However, features like this are standardized in bconf, ensuring the same set of features can be used regardless of parser or language.
 
 As bconf is explicitly designed for configuration files, it is not intended to support serializing arbitrary data structures. The root of any valid bconf document is always a hash-map which excludes some data from being serialized.
 
