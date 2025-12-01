@@ -27,9 +27,9 @@ comment			= "//" *( comment-char )
 ; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / object / array / tag / variable-key
+value			= primitive / object / array / modifier / variable-key
 primitive		= string / number / bool / null
-tag				= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
+modifier		= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
 object			= LBRACE OWSP [ object-member *( block-sep object-member ) [ OWSP COMMA ] ] OWSP RBRACE
 object-member	= OWSP item OWSP
 array			= LBRACKET OWSP [ value *( block-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
@@ -70,7 +70,7 @@ comment-char	= HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable cha
 string-char		= %x20-21 / %x23 / %x25-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars ", \, $
 multiline-char	= HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
 
-embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / tag ) OWSP RBRACE
+embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier ) OWSP RBRACE
 escaped-char		= "\" ( 
 	%x22 /			; "				quotation mark
 	%x5C /			; \				backslash

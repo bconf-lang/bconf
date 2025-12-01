@@ -15,14 +15,14 @@ For better configuration files
 -   [Objects](#objects)
 -   [Arrays](#arrays)
 -   [Statements](#statements)
--   [Tags](#tags)
+-   [Modifiers](#modifiers)
 -   [Variables](#variables)
 -   [Built-ins](#built-ins)
     -   [Reserved Keys](#reserved-keys)
         -   [import](#import)
         -   [export](#export)
         -   [extends](#extends)
-    -   [Tags](#tags)
+    -   [Modifiers](#modifiers)
         -   [ref()](#ref)
         -   [env()](#env)
         -   [string()](#string)
@@ -67,7 +67,7 @@ A value must be one of the following types:
 -   [Null](#null)
 -   [Objects](#objects)
 -   [Arrays](#arrays)
--   [Tags](#tags)
+-   [Modifiers](#modifiers)
 -   [Variables](#variables)
 
 Every key must be assigned a value. A key declaration without a value is invalid.
@@ -255,7 +255,7 @@ The following escape sequences are reserved. Using any other escape sequence (eg
 
 Any Unicode character may be escaped with the `\uHHHH` or `\UHHHHHHHH` forms and must be Unicode scalar values.
 
-You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that are not a primitive value (like objects and arrays) are invalid. Variables and tags must resolve to a primitive value.
+You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that are not a primitive value (like objects and arrays) are invalid. Variables and modifiers must resolve to a primitive value.
 
 ```bconf
 $variable = "embedded value"
@@ -363,7 +363,7 @@ inline_object = { enabled, port = 8080 }
 
 An array is an ordered list of values wrapped in square brackets (`[]`). Like objects, values can be separated by newlines or commas, and trailing commas are allowed. Arrays can contain a mix of value types.
 
-Arrays can only contain primitive values, objects, arrays, variables and tags. Any other value is invalid.
+Arrays can only contain primitive values, objects, arrays, variables and modifiers. Any other value is invalid.
 
 ```bconf
 // An array of strings
@@ -409,7 +409,7 @@ The values following the key in a statement can be any of the following types:
 -   Primitives
 -   Objects
 -   Arrays
--   Tags
+-   Modifiers
 -   Variables
 -   Unquoted Strings: A sequence of characters matching the alphanumeric key syntax (eg. `from`, `my-key`) is permitted and parsed as a simple string. Dotted keys and array index accessors are not allowed as unquoted string values.
 
@@ -417,20 +417,20 @@ To avoid ambiguity, implementations must prioritize matching standard value type
 
 Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`). A key followed directly by an object is an [implicit key-value](#implicit) pair.
 
-## Tags
+## Modifiers
 
-Tags act like functions that process or generate a value during parsing.
+Modifiers act like functions that process or generate a value during parsing.
 
-The syntax is a tag name followed by a single argument enclosed in parentheses, like `tag_name(argument)`. The argument can be any valid value, including a key path with dots and array indexers (eg. `server.ports[0]`).
+The syntax is a modifier name followed by a single argument enclosed in parentheses, like `modifier_name(argument)`. The argument can be any valid value, including a key path with dots and array indexers (eg. `server.ports[0]`).
 
-If the parser recognizes the tag name (eg. a built-in like `ref()`), it replaces the tag with the resolved value.
+If the parser recognizes the modifier name (eg. a built-in like `ref()`), it replaces the modifier with the resolved value.
 
 ```bconf
 // ref() resolves to the value at the specified path.
 default_port = ref(server.port)
 ```
 
-If the parser encounters an unrecognized tag, it treats it as a custom tag. Instead of resolving it, the parser serializes it as a tuple: `[tag_name, argument]`. When the argument is a key path, it's serialized as a string. This allows the application itself to implement custom logic after the file has been parsed.
+If the parser encounters an unrecognized modifier, it treats it as a custom modifier. Instead of resolving it, the parser serializes it as a tuple: `[modifier_name, argument]`. When the argument is a key path, it's serialized as a string. This allows the application itself to implement custom logic after the file has been parsed.
 
 For example:
 
@@ -439,12 +439,12 @@ For example:
 // It would be parsed to: ["date", "2025-10-09"]
 last_login = date("2025-10-09")
 
-// A custom tag using a key path as an argument
+// A custom modifier using a key path as an argument
 // It would be parsed to: ["to_upper", "app.name"]
 capitalized_name = to_upper(app.name)
 ```
 
-Implementations may optionally allow users to register their own custom tags with the parser, enabling them to be resolved at parse-time. However, this is not required.
+Implementations may optionally allow users to register their own custom modifiers with the parser, enabling them to be resolved at parse-time. However, this is not required.
 
 ## Variables
 
@@ -482,7 +482,7 @@ default_port = $port
 
 ## Built-ins
 
-Parsers are expected to implement the following built-in functionality. These are a mix of reserved keys and tags.
+Parsers are expected to implement the following built-in functionality. These are a mix of reserved keys and modifiers.
 
 ### Reserved Keys
 
@@ -635,7 +635,7 @@ export vars {
 
 Syntax: `extends "path/to/base/file.bconf"`
 
-The `extends` statement inserts the resolved contents of the extended file at its location. This means all variables, tags, and other built-ins in the extended file must be processed first, leaving only the final key-value structure to be inserted. The "last key wins" rule still applies.
+The `extends` statement inserts the resolved contents of the extended file at its location. This means all variables, modifiers, and other built-ins in the extended file must be processed first, leaving only the final key-value structure to be inserted. The "last key wins" rule still applies.
 
 ```bconf
 // base.bconf
@@ -653,7 +653,7 @@ env = "staging"
 extends "./base.bconf"
 ```
 
-### Tags
+### Modifiers
 
 #### ref()
 
@@ -684,7 +684,7 @@ environment = env("APP_ENV")
 
 Converts a value to its string representation.. The following are valid values which can be converted to a string - any other value is invalid:
 
--   `variable` / `tag`: These should be resolved first and then follow the rules below
+-   `variable` / `modifier`: These should be resolved first and then follow the rules below
 -   `number`: The value should be quoted (eg. `"123"`, `"123.45"`, `"123.45e6"`)
 -   `boolean`: The value should be quoted (eg. `"true"`, `"false"`)
 -   `null`: The value should be quoted (eg. `"null"`)
@@ -693,19 +693,19 @@ Converts a value to its string representation.. The following are valid values w
 ```bconf
 $variable = 321
 
-string_tag1 = string(123) // "123"
-string_tag2 = string(true) // "true"
-string_tag3 = string(false) // "false"
-string_tag4 = string(null) // "null"
-string_tag5 = string("some string") // "some string"
-string_tag6 = string($variable) // "321"
+string_modifier1 = string(123) // "123"
+string_modifier2 = string(true) // "true"
+string_modifier3 = string(false) // "false"
+string_modifier4 = string(null) // "null"
+string_modifier5 = string("some string") // "some string"
+string_modifier6 = string($variable) // "321"
 ```
 
 #### number()
 
 Converts a value to a number, inferring an integer or float type. The following are valid values which can be converted to a number - any other value is invalid:
 
--   `variable` / `tag`: These should be resolved first and then follow the rules below
+-   `variable` / `modifier`: These should be resolved first and then follow the rules below
 -   `true`: Always resolves to `1`
 -   `false`: Always resolves to `0`
 -   `null`: Always resolves to `0`
@@ -715,15 +715,15 @@ Converts a value to a number, inferring an integer or float type. The following 
 ```bconf
 $variable = "some string"
 
-number_tag1 = number(123) // 123
-number_tag2 = number(true) // 1
-number_tag3 = number(false) // 0
-number_tag4 = number(null) // 0
-number_tag5 = number($variable) // Invalid since variable is `"some string"` and an invalid number
-number_tag6 = number("123") // 123
-number_tag7 = number("123.321") // 123.321
-number_tag8 = number("123.321e10") // 123.321e10
-number_tag9 = number("-123_456") // -123456
+number_modifier1 = number(123) // 123
+number_modifier2 = number(true) // 1
+number_modifier3 = number(false) // 0
+number_modifier4 = number(null) // 0
+number_modifier5 = number($variable) // Invalid since variable is `"some string"` and an invalid number
+number_modifier6 = number("123") // 123
+number_modifier7 = number("123.321") // 123.321
+number_modifier8 = number("123.321e10") // 123.321e10
+number_modifier9 = number("-123_456") // -123456
 ```
 
 To convert specifically to an integer or float, see [int()](#int) and [float()](#float).
@@ -732,7 +732,7 @@ To convert specifically to an integer or float, see [int()](#int) and [float()](
 
 Converts a value to an integer. The following are valid values which can be converted to a integer - any other value is invalid:
 
--   `variable` / `tag`: These should be resolved first and then follow the rules below
+-   `variable` / `modifier`: These should be resolved first and then follow the rules below
 -   `true`: Always resolves to `1`
 -   `false`: Always resolves to `0`
 -   `null`: Always resolves to `0`
@@ -743,22 +743,22 @@ Converts a value to an integer. The following are valid values which can be conv
 ```bconf
 $variable = "invalid number"
 
-int_tag1 = int(3.7) // 3
-int_tag2 = int(true) // 1
-int_tag3 = int(false) // 0
-int_tag4 = int(null) // 0
-int_tag5 = int($variable) // Invalid since variable is `"invalid number"` and an invalid integer
-int_tag6 = int("123") // 123
-int_tag7 = int("123.321") // 123 since the string is first evaluated as a float, so it should be truncated
-int_tag8 = int(456.321e2) // 45632 as the exponent is evaluated and then the result is truncated
-int_tag9 = int("-123_456") // -123456
+int_modifier1 = int(3.7) // 3
+int_modifier2 = int(true) // 1
+int_modifier3 = int(false) // 0
+int_modifier4 = int(null) // 0
+int_modifier5 = int($variable) // Invalid since variable is `"invalid number"` and an invalid integer
+int_modifier6 = int("123") // 123
+int_modifier7 = int("123.321") // 123 since the string is first evaluated as a float, so it should be truncated
+int_modifier8 = int(456.321e2) // 45632 as the exponent is evaluated and then the result is truncated
+int_modifier9 = int("-123_456") // -123456
 ```
 
 #### float()
 
 Converts a value to a float. The following are valid values which can be converted to a float - any other value is invalid:
 
--   `variable` / `tag`: These should be resolved first and then follow the rules below
+-   `variable` / `modifier`: These should be resolved first and then follow the rules below
 -   `true`: Always resolves to `1.0`
 -   `false`: Always resolves to `0.0`
 -   `null`: Always resolves to `0.0`
@@ -769,22 +769,22 @@ Converts a value to a float. The following are valid values which can be convert
 ```bconf
 $variable = "false"
 
-float_tag1 = float(3) // 3.0
-float_tag2 = float(true) // 1.0
-float_tag3 = float(false) // 0.0
-float_tag4 = float(null) // 0.0
-float_tag5 = float($variable) // Invalid since variable is `"false"` and an invalid integer
-float_tag6 = float("123") // 123.0 since the string is first evaluated as an int
-float_tag7 = float("123.321") // 123.321
-float_tag8 = float("456.321e10") // 456.321e10
-float_tag9 = float("-123_456") // -123456.0
+float_modifier1 = float(3) // 3.0
+float_modifier2 = float(true) // 1.0
+float_modifier3 = float(false) // 0.0
+float_modifier4 = float(null) // 0.0
+float_modifier5 = float($variable) // Invalid since variable is `"false"` and an invalid integer
+float_modifier6 = float("123") // 123.0 since the string is first evaluated as an int
+float_modifier7 = float("123.321") // 123.321
+float_modifier8 = float("456.321e10") // 456.321e10
+float_modifier9 = float("-123_456") // -123456.0
 ```
 
 #### bool()
 
 Converts a value to a boolean. The following are valid values which can be converted to a boolean - any other value is invalid:
 
--   `variable` / `tag`: These should be resolved first and then follow the rules below
+-   `variable` / `modifier`: These should be resolved first and then follow the rules below
 -   `null`: Always resolves to `false`
 -   `string`: Non-empty strings always resolve to `true`, while empty strings are `false`
 -   `number`: Any non-zero number always resolved to `true` (including negatives). Only `0`, `0.0` and `-0.0` resolve to `false`
@@ -793,10 +793,10 @@ Converts a value to a boolean. The following are valid values which can be conve
 ```bconf
 $variable = "non-empty string!"
 
-bool_tag1 = bool(-3) // true
-bool_tag1 = bool(3) // true
-bool_tag2 = bool(0) // false
-bool_tag4 = bool(null) // false
-bool_tag5 = bool($variable) // true - since it resolves to a non-empty string
-bool_tag6 = bool("") // false
+bool_modifier1 = bool(-3) // true
+bool_modifier1 = bool(3) // true
+bool_modifier2 = bool(0) // false
+bool_modifier4 = bool(null) // false
+bool_modifier5 = bool($variable) // true - since it resolves to a non-empty string
+bool_modifier6 = bool("") // false
 ```
