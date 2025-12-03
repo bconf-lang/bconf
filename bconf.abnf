@@ -32,8 +32,8 @@ value			= primitive / block / array / modifier / variable-key
 primitive		= string / number / bool / null
 modifier		= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
 block			= LBRACE OWSP [ item *( ( SEMICOLON / NEWLINE ) OWSP item ) [ block-sep ] ] OWSP RBRACE
-array			= LBRACKET OWSP [ value *( array-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
-array-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
+array			= LBRACKET OWSP [ value *( array-sep value ) [ array-sep ] ] OWSP RBRACKET
+array-sep		= OWSP COMMA OWSP
 
 ; -----------------------
 ; Keys & Variables

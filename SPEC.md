@@ -361,7 +361,7 @@ inline_block = { enabled; port = 8080; }
 
 ## Arrays
 
-An array is an ordered list of values wrapped in square brackets (`[]`). Values can be separated by newlines or commas, and trailing commas are allowed. Arrays can contain a mix of value types.
+An array is an ordered list of values wrapped in square brackets (`[]`). Values _must_ be separated by a comma, and trailing commas are allowed. Arrays can contain a mix of value types.
 
 Arrays can only contain primitive values, blocks, arrays, variables and modifiers. Any other value is invalid.
 
