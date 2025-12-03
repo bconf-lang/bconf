@@ -87,7 +87,7 @@ invalid_key = "value" another_invalid_key = "value"
 valid_key = "value"
 ```
 
-If a key is declared multiple times in the same scope, the last one wins. Any other previously assigned value is overwritten.
+If a key is declared multiple times in the same scope, the last one wins regardless of the operator used. Any other previously assigned value is overwritten.
 
 ```bconf
 foo = "first value"
@@ -97,6 +97,12 @@ block {
     foo = "third value"
     foo = "fourth value" // This is in a different block scope - only `block.foo` is affected and not `foo` in the root
 }
+
+bar = "fifth value"
+bar << "sixth value" // This will override `bar` since its the last one
+
+allow = "localhost"
+allow "localhost" // This will override `allow` since its the last one
 ```
 
 ### Explicit
