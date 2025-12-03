@@ -12,14 +12,15 @@
 ; core features such as `import`, `extends` and `exports` conform to the grammar, they are
 ; defined by their behaviour and specific implementation.
 
-bconf	= OWSP [ item *( 1*NEWLINE OWSP item ) ] OWSP
-item	= key-value / statement / key / comment
+bconf		= OWSP [ LBRACE ] [ OWSP ] [ item *( block-sep OWSP item ) [ block-sep ] ] [ OWSP ] [ RBRACE ] OWSP
+item		= key-value / statement / key / comment
+block-sep	= OWSP ( SEMICOLON / NEWLINE ) OWSP
 
 ; -----------------------
 ; Core Statements
 ; -----------------------
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
-key-value		=/ key OWSP object
+key-value		=/ key OWSP block
 statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
 statement-item	= value / variable-path / alphanumeric-key
 comment			= "//" *( comment-char )
@@ -27,13 +28,12 @@ comment			= "//" *( comment-char )
 ; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / object / array / modifier / variable-key
+value			= primitive / block / array / modifier / variable-key
 primitive		= string / number / bool / null
 modifier		= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
-object			= LBRACE OWSP [ object-member *( block-sep object-member ) [ OWSP COMMA ] ] OWSP RBRACE
-object-member	= OWSP item OWSP
-array			= LBRACKET OWSP [ value *( block-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
-block-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
+block			= LBRACE OWSP [ item *( ( SEMICOLON / NEWLINE ) OWSP item ) [ block-sep ] ] OWSP RBRACE
+array			= LBRACKET OWSP [ value *( array-sep value ) [ OWSP COMMA ] ] OWSP RBRACKET
+array-sep		= OWSP ( COMMA / 1*NEWLINE ) OWSP
 
 ; -----------------------
 ; Keys & Variables
@@ -96,6 +96,7 @@ RBRACKET		= "]"
 LPAREN			= "("
 RPAREN			= ")"
 COMMA			= ","
+SEMICOLON		= ";"
 PERIOD			= "."
 DOLLARSIGN		= "$"
 HYPHEN-MINUS	= "-"

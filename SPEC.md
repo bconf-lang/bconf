@@ -12,7 +12,7 @@ For better configuration files
 -   [Numbers](#numbers)
 -   [Boolean](#boolean)
 -   [Null](#null)
--   [Objects](#objects)
+-   [Blocks](#blocks)
 -   [Arrays](#arrays)
 -   [Statements](#statements)
 -   [Modifiers](#modifiers)
@@ -40,7 +40,7 @@ Every bconf document must follow these basic rules:
 -   Whitespace refers to spaces and/or tabs
 -   bconf is case-sensitive, so `key` is different from `Key`
 -   Values are not hoisted; variables, imports, etc., must be declared before they are used.
--   The root of the document is always an object
+-   The root of the document is always a [block](#block) and follows the same rules (eg. semi-colons/newlines as a delimiter). The root is not required to be wrapped in curly-braces, however, it must be the first valid token if so.
 -   A primitive value is a simple, single value. These are `strings`, `numbers`, `booleans`, or `null`.
 
 ## Comments
@@ -65,7 +65,7 @@ A value must be one of the following types:
 -   [Numbers](#numbers)
 -   [Boolean](#boolean)
 -   [Null](#null)
--   [Objects](#objects)
+-   [Blocks](#blocks)
 -   [Arrays](#arrays)
 -   [Modifiers](#modifiers)
 -   [Variables](#variables)
@@ -93,9 +93,9 @@ If a key is declared multiple times in the same scope, the last one wins. Any ot
 foo = "first value"
 foo = "second value" // This will be the actual value of `foo` since it is the last one
 
-object {
+block {
     foo = "third value"
-    foo = "fourth value" // This is in a different object scope - only `object.foo` is affected and not `foo` in the root
+    foo = "fourth value" // This is in a different block scope - only `block.foo` is affected and not `foo` in the root
 }
 ```
 
@@ -118,16 +118,16 @@ key << "another value" // ["value", "another value"]
 
 ### Implicit
 
-An implicit pair is a shorthand for assigning an object to a key by omitting the `=` operator.
+An implicit pair is a shorthand for assigning a block to a key by omitting the `=` operator.
 
 ```bconf
-// Equivalent to `object = { ... }`
-object {
+// Equivalent to `block = { ... }`
+block {
     key = "value"
 }
 ```
 
-This shorthand is only for objects. If the operator is omitted for any other value (eg. array, string, number, etc.) it is a [statement](#statement).
+This shorthand is only for blocks. If the operator is omitted for any other value (eg. array, string, number, etc.) it is a [statement](#statement).
 
 A bare key without an operator or value is shorthand for assigning `true`.
 
@@ -166,7 +166,7 @@ Quoted keys are a single-line string used as a key. They follow the same rules a
 Dotted keys are a sequence of keys joined by a dot. Any type of key can be used in a dotted key.
 
 ```bconf
-// This creates a nested object structure.
+// This creates a nested block structure.
 a.b.c = "value"
 
 // Any key type can be used in the chain.
@@ -175,7 +175,7 @@ a."b".c = "value"
 
 Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a non-negative, zero-based integer wrapped in square brackets (`[]`).
 
-An index accessor must always be associated with a key; it cannot stand alone. It is invalid to use an index accessor on a key that holds a non-array value, such as an object, string, or number.
+An index accessor must always be associated with a key; it cannot stand alone. It is invalid to use an index accessor on a key that holds a non-array value, such as a block, string, or number.
 
 If the key does not yet exist, a new array is created. If an index is assigned beyond the array's current bounds, the array will be padded with `null` values (or an equivalent) to accommodate the new value at the specified position.
 
@@ -255,7 +255,7 @@ The following escape sequences are reserved. Using any other escape sequence (eg
 
 Any Unicode character may be escaped with the `\uHHHH` or `\UHHHHHHHH` forms and must be Unicode scalar values.
 
-You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that are not a primitive value (like objects and arrays) are invalid. Variables and modifiers must resolve to a primitive value.
+You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that are not a primitive value (like blocks and arrays) are invalid. Variables and modifiers must resolve to a primitive value.
 
 ```bconf
 $variable = "embedded value"
@@ -340,14 +340,14 @@ null1 = null
 
 For implementations where a direct null equivalent is absent or discouraged (eg. Go's `nil` with non-pointer types), parsers may omit keys with null values from the final output.
 
-## Objects
+## Blocks
 
-An object is a collection of key-value pairs and statements wrapped in curly braces (`{}`). Pairs can be separated by newlines or commas. Trailing commas are allowed.
+A block is a collection of key-value pairs and statements wrapped in curly braces (`{}`). Values can be separated by newlines or semi-colons. Trailing semi-colons are allowed.
 
 ```bconf
 config {
-    enabled
-    host = "localhost",
+    enabled;
+    host = "localhost";
     port = 8080
 
     hooks ondeploy {
@@ -355,15 +355,15 @@ config {
     }
 }
 
-// Objects can also be defined inline.
-inline_object = { enabled, port = 8080 }
+// Blocks can also be defined inline.
+inline_block = { enabled; port = 8080; }
 ```
 
 ## Arrays
 
-An array is an ordered list of values wrapped in square brackets (`[]`). Like objects, values can be separated by newlines or commas, and trailing commas are allowed. Arrays can contain a mix of value types.
+An array is an ordered list of values wrapped in square brackets (`[]`). Values can be separated by newlines or commas, and trailing commas are allowed. Arrays can contain a mix of value types.
 
-Arrays can only contain primitive values, objects, arrays, variables and modifiers. Any other value is invalid.
+Arrays can only contain primitive values, blocks, arrays, variables and modifiers. Any other value is invalid.
 
 ```bconf
 // An array of strings
@@ -407,7 +407,7 @@ Is parsed into a structure like this (represented as JSON):
 The values following the key in a statement can be any of the following types:
 
 -   Primitives
--   Objects
+-   Blocks
 -   Arrays
 -   Modifiers
 -   Variables
@@ -415,7 +415,7 @@ The values following the key in a statement can be any of the following types:
 
 To avoid ambiguity, implementations must prioritize matching standard value types first. For instance, `true` will always be parsed as a boolean, and `123` as a number. Only if a value does not match any other type will it be treated as an unquoted string.
 
-Important: This syntax is only considered a statement if the value immediately after the key is not an object (`{`). A key followed directly by an object is an [implicit key-value](#implicit) pair.
+Important: This syntax is only considered a statement if the value immediately after the key is not a block (`{`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
 
 ## Modifiers
 
@@ -466,7 +466,7 @@ $allowed_origins << "test.com"
 origins = $allowed_origins // Value becomes ["test.com"]
 ```
 
-Variables are scoped. A variable defined inside an object is only accessible within that object and its descendants.
+Variables are scoped. A variable defined inside a block is only accessible within that block and its descendants.
 
 ```bconf
 app {
@@ -488,7 +488,7 @@ Parsers are expected to implement the following built-in functionality. These ar
 
 #### import
 
-Syntax: `import from "path/to/file.bconf" { $var1, $var2, ... }`
+Syntax: `import from "path/to/file.bconf" { $var1; $var2; ... }`
 
 The `import` statement allows for importing variables defined in other bconf files for use within the current file. Only local file paths are supported (relative or absolute). `import` statements must be defined before their variables can be used.
 
@@ -500,10 +500,10 @@ import from "./common.bconf" { $app_name }
 name = $app_name
 ```
 
-It's important to understand the difference between a variable's actual value (the data to be imported and what should actually be used) and the import instruction (the values assigned to the variable inside the import statement object).
+It's important to understand the difference between a variable's actual value (the data to be imported and what should actually be used) and the import instruction (the values assigned to the variable inside the import statement block).
 
 -   Actual Value: This is the value defined for the variable in the source file. It's the value that will be made available in your current file.
--   Import Instruction: This is the value assigned to the variable inside the import statement object. This defines what/how a variable should be imported
+-   Import Instruction: This is the value assigned to the variable inside the import statement block. This defines what/how a variable should be imported
 
 ```bconf
 // common.bconf
@@ -545,8 +545,8 @@ import from "path/to/file.bconf" {
     // INVALID: The instruction is a string.
     $invalid_string = "some value"
 
-    // INVALID: The instruction is an object.
-    $invalid_object = { a = 1 }
+    // INVALID: The instruction is an block.
+    $invalid_block = { a = 1 }
 }
 ```
 
@@ -574,11 +574,11 @@ $aliased = "aliased"
 
 #### export
 
-Syntax: `export vars { $var1, $var2, ... }`
+Syntax: `export vars { $var1; $var2; ... }`
 
 The `export` statement makes variables from the current file available for other files to `import`.
 
-Inside the object, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` statement, there is the actual value and export instruction.
+Inside the block, variable key names can either be a reference to a variable already defined in the file, or an inline definition just for export. Much like the `import` statement, there is the actual value and export instruction.
 
 An export instruction is `true` or an `alias statement`. Any other value can immediately be considered as an inline definition. Any other statement is invalid. The following is the expected logic for each valid export instruction:
 
@@ -618,7 +618,7 @@ export vars {
 $is_enabled = false // This variable is separate from the one exported above.
 ```
 
-The export object must only contain variable keys. Non-variable keys or duplicate exports of the same name are invalid.
+The export block must only contain variable keys. Non-variable keys or duplicate exports of the same name are invalid.
 
 ```bconf
 export vars {

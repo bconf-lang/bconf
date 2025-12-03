@@ -19,7 +19,7 @@ Dynamic elements like variables, tags and extending files should be expressed wi
 // This is a bconf file
 
 extends "./base.bconf"
-import from "./secrets.bconf" { $db_user, $db_pass as $database_password }
+import from "./secrets.bconf" { $db_user; $db_pass as $database_password }
 
 $app_name = "An awesome app"
 $env = env("APP_ENV")
@@ -49,8 +49,8 @@ database.primary {
 }
 
 database.replicas = [
-    { host = "replica1.db.internal", user = $db_user },
-    { host = "replica2.db.internal", user = $db_user }
+    { host = "replica1.db.internal"; user = $db_user },
+    { host = "replica2.db.internal"; user = $db_user }
 ]
 
 database.replicas[0].read_only = true
