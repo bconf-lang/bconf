@@ -38,13 +38,13 @@ array-sep		= OWSP COMMA OWSP
 ; -----------------------
 ; Keys & Variables
 ; -----------------------
-key					= access-key *( ( PERIOD access-key ) / array-accessor )
+key					= access-key *( ( PERIOD access-key ) / *( array-accessor ) )
 access-key			= base-key / variable-key
 base-key			= alphanumeric-key / singleline-string
 alphanumeric-key	= 1*( ALPHA / DIGIT / HYPHEN-MINUS / UNDERSCORE )
 array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
 variable-key		= DOLLARSIGN alphanumeric-key
-variable-path		= variable-key *( ( PERIOD access-key ) / array-accessor )
+variable-path		= variable-key *( ( PERIOD access-key ) / *( array-accessor ) )
 
 ; -----------------------
 ; Primitives

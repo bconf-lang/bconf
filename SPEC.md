@@ -173,7 +173,7 @@ a.b.c = "value"
 a."b".c = "value"
 ```
 
-Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a non-negative, zero-based integer wrapped in square brackets (`[]`).
+Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a non-negative, zero-based integer wrapped in square brackets (`[]`). Array indexes can be chained for multi-dimensional array access.
 
 An index accessor must always be associated with a key; it cannot stand alone. It is invalid to use an index accessor on a key that holds a non-array value, such as a block, string, or number.
 
@@ -189,6 +189,9 @@ new_list[1] = "bconf" // new_list is now [null, "bconf"]
 
 // Use with dotted keys to create nested structures
 data.users[0] = "Alice" // data.users becomes ["Alice"]
+
+// Chain array indexes for multi-dimensional array access
+multi_dimensional_index[0][1] = "nested"
 
 // INVALID: Index cannot be negative
 data.users[-1] = "Bob"
