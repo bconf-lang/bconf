@@ -702,6 +702,15 @@ cors.allowed_origins << "test.com"
 host = ref(cors.allowed_origins[1])
 ```
 
+Circular dependencies should be rejected and immediately invalidate the document. For example, this is invalid:
+
+```bconf
+foo = ref(bar)
+bar = ref(foo)
+```
+
+Key paths that start with a variable are not expected to work as variables should be resolved first (eg. `ref($foo.bar)`). So the resulting value provided to the `ref()` modifier will not be a key path and is therefore invalid.
+
 #### env()
 
 Reads the value of an operating system environment variable. The argument must be a string. It is invalid if the environment variable does not exist when parsing.
