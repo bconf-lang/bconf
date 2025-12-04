@@ -518,6 +518,8 @@ Syntax: `import from "path/to/file.bconf" { $var1; $var2; ... }`
 
 The `import` statement allows for importing variables defined in other bconf files for use within the current file. Only local file paths are supported (relative or absolute). `import` statements must be defined before their variables can be used.
 
+Paths to files must either be absolute or relative. URI schemas such as `file://` or `https://` are unsupported.
+
 ```bconf
 // INVALID: Cannot use $app_name before it has been imported
 name = $app_name
@@ -662,6 +664,8 @@ export vars {
 Syntax: `extends "path/to/base/file.bconf"`
 
 The `extends` statement inserts the resolved contents of the extended file at its location. This means all variables, modifiers, and other built-ins in the extended file must be processed first, leaving only the final key-value structure to be inserted. The "last key wins" rule still applies.
+
+Paths to files must either be absolute or relative. URI schemas such as `file://` or `https://` are unsupported.
 
 ```bconf
 // base.bconf
