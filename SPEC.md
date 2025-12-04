@@ -368,6 +368,12 @@ config {
 inline_block = { enabled; port = 8080; }
 ```
 
+### Scoping
+
+Defining a block also creates a new scope. Scopes only affect the availability of [variables](#variables), other dynamic features such as statements and modifiers are free to ignore scopes. Although dotted keys and blocks may affect the same values, dotted keys **do not** create scopes. Instead, they use the current scope in which they are being defined.
+
+Scopes inherit the scope of the parent, allowing anything that was defined in the parent block to also be accessible the child. Once the parser reaches the end of the block, all variables defined inside that scope will no longer be accessible. Parsers do not need to hang onto the scope created once a block has finished parsing.
+
 ## Arrays
 
 An array is an ordered list of values wrapped in square brackets (`[]`). Values _must_ be separated by a comma, and trailing commas are allowed. Arrays can contain a mix of value types.
@@ -478,16 +484,26 @@ origins = $allowed_origins // Value becomes ["test.com"]
 Variables are scoped. A variable defined inside a block is only accessible within that block and its descendants.
 
 ```bconf
+server.features {
+    $apiV2Enabled = true
+}
+
 app {
     $port = 3000
 
     // VALID: $port is in a parent scope.
     server.port = $port
+
+    // INVALID: this may have been defined before for `server.features`, but it went
+    // out of scope once that block was finished parsing
+    server.features.apiV2 = $apiV2Enabled
 }
 
 // INVALID: $port is not accessible in the root scope.
 default_port = $port
 ```
+
+Since only blocks can define new scopes, variables cannot be defined inside a dotted key. For example, `app.$port` would be invalid since no new scope is created and any scope previously created for `app` would no longer available. However, something like `$port.app` would be valid since it is defining a variable in the current scope.
 
 ## Built-ins
 
