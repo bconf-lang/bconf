@@ -264,7 +264,7 @@ The following escape sequences are reserved. Using any other escape sequence (eg
 
 Any Unicode character may be escaped with the `\uHHHH` or `\UHHHHHHHH` forms and must be Unicode scalar values.
 
-You can embed values in a string using the `${...}` syntax. The resolved value must be a string or a type that can be converted to one (like a number or boolean). Resolved values that are not a primitive value (like blocks and arrays) are invalid. Variables and modifiers must resolve to a primitive value.
+You can embed values in a string using the `${...}` syntax. The fully resolved value must be a primitive such that the values can be converted into a string. Resolved values that are not a primitive value (like blocks and arrays) are invalid. Variables and modifiers must also resolve to a primitive value.
 
 ```bconf
 $variable = "embedded value"
