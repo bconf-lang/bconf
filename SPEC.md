@@ -42,6 +42,7 @@ Every bconf document must follow these basic rules:
 -   Values are not hoisted; variables, imports, etc., must be declared before they are used.
 -   The root of the document is always a [block](#block) and follows the same rules (eg. semi-colons/newlines as a delimiter). The root is not required to be wrapped in curly-braces, however, it must be the first valid token if so.
 -   A primitive value is a simple, single value. These are `strings`, `numbers`, `booleans`, or `null`.
+-   Parsers should preserve the order that key-value pairs, statements, etc. appear in text (ie. parse the file top to bottom), however, insertion order does not need to be preserved when converted to native data structures.
 
 ## Comments
 
