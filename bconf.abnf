@@ -22,7 +22,7 @@ block-sep	= OWSP ( SEMICOLON / NEWLINE ) OWSP
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
 key-value		=/ key OWSP block
 statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
-statement-item	= value / variable-path / bare-key
+statement-item	= value / key 
 comment			= "//" *( comment-char )
 
 ; -----------------------

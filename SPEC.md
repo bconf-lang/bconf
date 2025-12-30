@@ -408,6 +408,7 @@ For example, this:
 ```bconf
 allow from "192.168.1.1"
 allow from "10.0.0.0/8"
+allow from server.host[0]
 ```
 
 Is parsed into a structure like this (represented as JSON):
@@ -416,7 +417,8 @@ Is parsed into a structure like this (represented as JSON):
 {
 	"allow": [
 		["from", "192.168.1.1"],
-		["from", "10.0.0.0/8"]
+		["from", "10.0.0.0/8"],
+		["from", "server.host[0]"]
 	]
 }
 ```
@@ -428,9 +430,10 @@ The values following the key in a statement can be any of the following types:
 -   Arrays
 -   Modifiers
 -   Variables
--   Unquoted Strings: A sequence of characters matching the alphanumeric key syntax (eg. `from`, `my-key`) is permitted and parsed as a simple string. Dotted keys and array index accessors are not allowed as unquoted string values.
+-   Bare keys
+    - These are parsed as a string. Dotted keys and array index accessors are allowed, with the full key being resolved to a string (eg. `foo.bar[0]`) 
 
-To avoid ambiguity, implementations must prioritize matching standard value types first. For instance, `true` will always be parsed as a boolean, and `123` as a number. Only if a value does not match any other type will it be treated as an unquoted string.
+To avoid ambiguity, implementations must prioritize matching standard value types first. For instance, `true` will always be parsed as a boolean, and `123.1` as a number BEFORE being parsed as a bare key. Only if a value does not match any other type will it be treated as an unquoted string.
 
 Important: This syntax is only considered a statement if the value immediately after the key is not a block (`{`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
 
