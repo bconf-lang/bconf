@@ -262,7 +262,6 @@ The following escape sequences are reserved. Using any other escape sequence (eg
 ```
 \"          - quotation mark
 \\          - backslash
-\$          - dollar sign
 \b          - backspace
 \f          - form feed
 \n          - new line
@@ -282,6 +281,8 @@ $variable = "embedded value"
 // Resolves to "This is a string using an embedded value!"
 key = "This is a string using an ${$variable}!"
 ```
+
+If there is a dollar sign (`$`) not followed immediately by a curly brace (`{`) within a string, the dollar sign should be treated as a regular value (eg. `"the total is $10.99`)
 
 ## Numbers
 

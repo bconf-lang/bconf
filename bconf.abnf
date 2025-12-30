@@ -67,14 +67,13 @@ null			= %s"null"
 ; Allowed Characters
 ; -----------------------
 comment-char	= HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable chars, no controls
-string-char		= %x20-21 / %x23 / %x25-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars ", \, $
+string-char		= %x20-21 / %x23-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars (ie. ", \). Unescaped $ are allowed since embed sequences must have { following it.
 multiline-char	= HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
 
 embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier ) OWSP RBRACE
 escaped-char		= "\" ( 
 	%x22 /			; "				quotation mark
 	%x5C /			; \				backslash
-	%x24 /			; $				dollar sign
 	%x62 /			; b				backspace
 	%x66 /			; f				form feed
 	%x6E /			; n				new line
