@@ -191,7 +191,7 @@ a."b".c = "value"
 
 Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a non-negative, zero-based integer wrapped in square brackets (`[]`). Array indexes can be chained for multi-dimensional array access.
 
-An index accessor must always be associated with a key; it cannot stand alone. It is invalid to use an index accessor on a key that holds a non-array value, such as a block, string, or number.
+An index accessor must always be associated with a key; it cannot stand alone. If an index accessor is used on a key that holds a non-array value, such as a block, string, or number, it should create an array at that key.
 
 If the key does not yet exist, a new array is created. If an index is assigned beyond the array's current bounds, the array will be padded with `null` values (or an equivalent) to accommodate the new value at the specified position.
 
@@ -218,7 +218,7 @@ data.users[-1] = "Bob"
 // Given this non-array value:
 not_an_array = "hello"
 
-// INVALID: Cannot use an index accessor on a string
+// VALID: the previous value will be replaced with an array that has "H" at index 0 
 not_an_array[0] = "H"
 ```
 
