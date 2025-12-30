@@ -157,6 +157,14 @@ bare-key = "value"
 サーバー設定 = { ... } // Valid Unicode characters
 ```
 
+`true`, `false`, and `null` are considered valid keys and will *always* resolve to a string. Their respective types do not carry any meaning when they are used as a key. They can still be used as a value.
+
+```bconf
+true = "value" // VALID: `true` can be used as a key
+false = false // VALID: can be used as a key AND as a value
+null = null
+```
+
 Quoted keys are a single-line string used as a key. They follow the same rules as string values and are useful for keys containing special characters, or dynamic keys using embedded values. Multi-line strings are invalid.
 
 ```bconf
