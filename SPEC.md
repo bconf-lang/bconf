@@ -146,14 +146,15 @@ port = 8080
 
 ## Keys
 
-Keys are always interpreted as strings and can be alphanumeric or quoted. Keys can be chained using a dot (`.`) or an array index accessor (`[]`) to create nested structures.
+Keys are always interpreted as strings and can be bare or quoted. Keys can be chained using a dot (`.`) or an array index accessor (`[]`) to create nested structures.
 
-Alphanumeric keys can contain ASCII letters, ASCII numbers, underscores, and dashes (`A-Za-z0-9_-`). A key made only of digits (eg. 1234) is still a string.
+Bare keys can contain any printable Unicode character excluding reserved characters (`"$'<>[]{}();/\=,.|`). A key made only of digits (eg. 1234) is still a string.
 
 ```bconf
 key = "value"
-alphanumeric-key = "value"
+bare-key = "value"
 1234 = "value" // The key is the string "1234"
+サーバー設定 = { ... } // Valid Unicode characters
 ```
 
 Quoted keys are a single-line string used as a key. They follow the same rules as string values and are useful for keys containing special characters, or dynamic keys using embedded values. Multi-line strings are invalid.

@@ -22,7 +22,7 @@ block-sep	= OWSP ( SEMICOLON / NEWLINE ) OWSP
 key-value		= key OWSP ( "=" / "<<" ) OWSP value
 key-value		=/ key OWSP block
 statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
-statement-item	= value / variable-path / alphanumeric-key
+statement-item	= value / variable-path / bare-key
 comment			= "//" *( comment-char )
 
 ; -----------------------
@@ -30,7 +30,7 @@ comment			= "//" *( comment-char )
 ; -----------------------
 value			= primitive / block / array / modifier / variable-key
 primitive		= string / number / bool / null
-modifier		= alphanumeric-key LPAREN OWSP ( value / key ) OWSP RPAREN
+modifier		= bare-key LPAREN OWSP ( value / key ) OWSP RPAREN
 block			= LBRACE OWSP [ item *( ( SEMICOLON / NEWLINE ) OWSP item ) [ block-sep ] ] OWSP RBRACE
 array			= LBRACKET OWSP [ value *( array-sep value ) [ array-sep ] ] OWSP RBRACKET
 array-sep		= OWSP COMMA OWSP
@@ -39,12 +39,12 @@ array-sep		= OWSP COMMA OWSP
 ; Keys & Variables
 ; -----------------------
 key					= key-path / variable-path
-key-path			= base-key *( ( PERIOD base-key ) / *( array-accessor ) )
-base-key			= alphanumeric-key / singleline-string
-alphanumeric-key	= 1*( ALPHA / DIGIT / HYPHEN-MINUS / UNDERSCORE )
+key-path			= text-key *( ( PERIOD text-key ) / *( array-accessor ) )
+text-key			= bare-key / singleline-string
+bare-key	= 1*( %x21 / %x23 / %x25-26 / %x2A-%x2B / %x2D / %x30-%x3A / %x3F-%x5A / %x5E-%x7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; Printable chars, no controls or special characters (", $, ', (, ), comma, ., /, ;, <, =, >, [, \, ] {, |, })
 array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
-variable-key		= DOLLARSIGN alphanumeric-key
-variable-path		= variable-key *( ( PERIOD base-key ) / *( array-accessor ) )
+variable-key		= DOLLARSIGN bare-key
+variable-path		= variable-key *( ( PERIOD text-key ) / *( array-accessor ) )
 
 ; -----------------------
 ; Primitives
