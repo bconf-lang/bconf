@@ -42,7 +42,7 @@ key					= key-path / variable-path
 key-path			= text-key *( ( PERIOD text-key ) / *( array-accessor ) )
 text-key			= bare-key / singleline-string
 bare-key	= 1*( %x21 / %x23 / %x25-26 / %x2A-%x2B / %x2D / %x30-%x3A / %x3F-%x5A / %x5E-%x7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; Printable chars, no controls or special characters (", $, ', (, ), comma, ., /, ;, <, =, >, [, \, ] {, |, })
-array-accessor		= LBRACKET OWSP dec-int OWSP RBRACKET
+array-accessor		= LBRACKET OWSP integer OWSP RBRACKET
 variable-key		= DOLLARSIGN bare-key
 variable-path		= variable-key *( ( PERIOD text-key ) / *( array-accessor ) )
 

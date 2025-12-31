@@ -189,13 +189,29 @@ a.b.c = "value"
 a."b".c = "value"
 ```
 
-Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a non-negative, zero-based integer wrapped in square brackets (`[]`). Array indexes can be chained for multi-dimensional array access.
+Keys cannot be empty. This applies to quoted keys that resolve to an empty string.
 
-For simplicity when parsing, index integers are expected to follow the same rules when parsing regular integer. This means the prefix `+` is allowed and indexes like `[+1]` are valid.
+```bconf
+// INVALID: Value assignment with no key
+= "value"
+
+// INVALID: Empty quoted key
+"" = "value"
+
+$empty_string_var = ""
+// INVALID: Quoted key with embedded value resolves to an empty string
+"${$empty_string_var}" = "value"
+```
+
+### Array indexes
+
+Values in an array can be accessed or assigned by appending an index accessor to a key. The syntax is a zero-based integer wrapped in square brackets (`[]`). Indexes can be positive or negative, where negative integers are used to index values relative from the end of the array. Array indexes can be chained for multi-dimensional array access.
+
+For simplicity when parsing, index integers are expected to follow the same rules when parsing regular integer. This means the prefix `+` is allowed and indexes like `[+1]` are valid in addition to `-` for negative integers.
 
 An index accessor must always be associated with a key; it cannot stand alone. If an index accessor is used on a key that holds a non-array value, such as a block, string, or number, it should create an array at that key.
 
-If the key does not yet exist, a new array is created. If an index is assigned beyond the array's current bounds, the array will be padded with `null` values (or an equivalent) to accommodate the new value at the specified position.
+If the key does not yet exist, a new array is created. If an index is assigned beyond the array's current bounds, the array will be padded with `null` values (or an equivalent) to accommodate the new value at the specified position. This also applies to negative integers. For example, say the key `foo` has an array with a length of 2. Indexing the 4th last element (`foo[-4]`) would effectively insert two elements at the beginning of the array - the first one at index 0 is the actual value and the value at index 1 would be `null` for padding.
 
 ```bconf
 // Create a new array and assign a value at index 1
@@ -211,7 +227,7 @@ data.users[0] = "Alice" // data.users becomes ["Alice"]
 // Chain array indexes for multi-dimensional array access
 multi_dimensional_index[0][1] = "nested"
 
-// INVALID: Index cannot be negative
+// VALID: Negative indexes are ok - this will assign the last value in the array 
 data.users[-1] = "Bob"
 
 // INVALID: Index accessor must be attached to a key
@@ -225,20 +241,6 @@ not_an_array = "hello"
 
 // VALID: the previous value will be replaced with an array that has "H" at index 0 
 not_an_array[0] = "H"
-```
-
-Keys cannot be empty. This applies to quoted keys that resolve to an empty string.
-
-```bconf
-// INVALID: Value assignment with no key
-= "value"
-
-// INVALID: Empty quoted key
-"" = "value"
-
-$empty_string_var = ""
-// INVALID: Quoted key with embedded value resolves to an empty string
-"${$empty_string_var}" = "value"
 ```
 
 ## Strings
