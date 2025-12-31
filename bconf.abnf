@@ -33,6 +33,8 @@ primitive		= string / number / bool / null
 modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
 modifier-item		= value / key
 block			= LBRACE OWSP [ item *( ( SEMICOLON / NEWLINE ) OWSP item ) [ block-sep ] ] OWSP RBRACE
+map			= LANGLEBRACKET OWSP [ map-member *( comma-sep map-member ) [ comma-sep ] ] OWSP RANGLEBRACKET
+map-member		= text-key OWSP COLON OWSP value
 array			= LBRACKET OWSP [ value *( comma-sep value ) [ comma-sep ] ] OWSP RBRACKET
 comma-sep		= OWSP COMMA OWSP
 
@@ -40,12 +42,12 @@ comma-sep		= OWSP COMMA OWSP
 ; Keys & Variables
 ; -----------------------
 key					= key-path / variable-path
-key-path			= text-key *( ( PERIOD text-key ) / *( array-accessor ) )
-text-key			= bare-key / singleline-string
+key-path			= text-key *( ( PERIOD text-key ) / *( index-accessor ) )
+text-key			= bare-key / singleline-strinr
 bare-key	= 1*( %x21 / %x23 / %x25-26 / %x2A-%x2B / %x2D / %x30-%x3A / %x3F-%x5A / %x5E-%x7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; Printable chars, no controls or special characters (", $, ', (, ), comma, ., /, ;, <, =, >, [, \, ] {, |, })
-array-accessor		= LBRACKET OWSP integer OWSP RBRACKET
+index-accessor		= LBRACKET OWSP ( text-key / integer ) OWSP RBRACKET ; Integer for arrays and text-key for maps 
 variable-key		= DOLLARSIGN bare-key
-variable-path		= variable-key *( ( PERIOD text-key ) / *( array-accessor ) )
+variable-path		= variable-key *( ( PERIOD text-key ) / *( index-accessor ) )
 
 ; -----------------------
 ; Primitives
@@ -95,8 +97,11 @@ LBRACKET		= "["
 RBRACKET		= "]"
 LPAREN			= "("
 RPAREN			= ")"
+LANGLEBRACKET		= "<"
+RANGLEBRACKET		= ">"
 COMMA			= ","
 SEMICOLON		= ";"
+COLON			= ":"
 PERIOD			= "."
 DOLLARSIGN		= "$"
 HYPHEN-MINUS	= "-"

@@ -13,6 +13,7 @@ For better configuration files
 -   [Boolean](#boolean)
 -   [Null](#null)
 -   [Blocks](#blocks)
+-   [Maps](#maps)
 -   [Arrays](#arrays)
 -   [Statements](#statements)
 -   [Modifiers](#modifiers)
@@ -243,6 +244,38 @@ not_an_array = "hello"
 not_an_array[0] = "H"
 ```
 
+### Map Indexes
+
+Like arrays, values in a map can be accessed or assigned by appending a keyed index accessor to a key. The index key must be an allowed map key (bare key or single line string) wrapped in square brackets (`[]`). Map indexes can be chained for multi-dimensional array access.
+
+While pure numbers such as `10` are valid keys, they should always be stringified and match a key with the same value, rather than accessing the element at the 10th position.
+
+A map index accessor must always be associated with a key; it cannot stand alone. If a map index accessor is used on a key that holds a non-map value, such as a block, array, string, or number, it should create a map at that key.
+
+```bconf
+// Create a new map and assign a value for key `foo`
+// new_map becomes <foo: "world"> 
+new_map[foo] = "world"
+
+// Overwrite a value in an existing array
+new_map[foo] = "bconf" // new_map is now <foo: "bconf">
+
+// Insert a new entry into the map
+new_map[bar] = "foo" // new_map is now <foo: "bconf", bar: "foo">
+
+// Chain map indexes for multi-dimensional map access
+multi_dimensional_index[first][second] = "nested"
+
+// INVALID: accessor must be attached to a key
+[foo] = "value"
+
+// Given this non-map value:
+not_a_map = "hello"
+
+// VALID: the previous value will be replaced with a map that has "H" at key `hello` 
+not_a_map[hello] = "H"
+```
+
 ## Strings
 
 A string can either be single-line or multi-line.
@@ -391,6 +424,32 @@ inline_block = { enabled; port = 8080; }
 Defining a block also creates a new scope. Scopes only affect the availability of [variables](#variables), other dynamic features such as statements and modifiers are free to ignore scopes. Although dotted keys and blocks may affect the same values, dotted keys **do not** create scopes. Instead, they use the current scope in which they are being defined.
 
 Scopes inherit the scope of the parent, allowing anything that was defined in the parent block to also be accessible the child. Once the parser reaches the end of the block, all variables defined inside that scope will no longer be accessible. Parsers do not need to hang onto the scope created once a block has finished parsing.
+
+## Maps
+
+A map is a collection of key-value pairs where insertion order is preserved. Only bare or single line strings can be used as a key, and statements are not allowed as a value. Keys and their values are separated by a colon (`:`).
+
+```bconf
+map = <foo: "bar", baz: "foo", "$another_key": 123>
+```
+
+Similar to arrays, items in a map can be indexed using their key wrapped in square brackets (`[]`). If 
+
+Items indexed using a key that does not yet exist in the list should be appended to the end of the map, while indexing with a key that does exist in the map should update the value in its existing position.
+
+```bconf
+map[foo] = "baz"
+map[baz] = null
+map[bar] = "foo" // Will be inserted at the end of the list
+```
+
+Implementations *must* preserve the insertion order of map entries when deserializing to native data structures. 
+
+For languages without native ordered map support, implementations must use an alternative data structure that maintains insertion order, such as:
+- A array of key-value pairs
+- A composite structure combining an ordered key list with a hash table
+
+Implementations may provide configuration options to use unordered structures for performance, but must not do so by default.
 
 ## Arrays
 
