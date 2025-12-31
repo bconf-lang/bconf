@@ -30,10 +30,11 @@ comment			= "//" *( comment-char )
 ; -----------------------
 value			= primitive / block / array / modifier / variable-key
 primitive		= string / number / bool / null
-modifier		= bare-key LPAREN OWSP ( value / key ) OWSP RPAREN
+modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
+modifier-item		= value / key
 block			= LBRACE OWSP [ item *( ( SEMICOLON / NEWLINE ) OWSP item ) [ block-sep ] ] OWSP RBRACE
-array			= LBRACKET OWSP [ value *( array-sep value ) [ array-sep ] ] OWSP RBRACKET
-array-sep		= OWSP COMMA OWSP
+array			= LBRACKET OWSP [ value *( comma-sep value ) [ comma-sep ] ] OWSP RBRACKET
+comma-sep		= OWSP COMMA OWSP
 
 ; -----------------------
 ; Keys & Variables

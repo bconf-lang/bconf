@@ -457,27 +457,39 @@ Important: This syntax is only considered a statement if the value immediately a
 
 Modifiers act like functions that process or generate a value during parsing.
 
-The syntax is a modifier name followed by a single argument enclosed in parentheses, like `modifier_name(argument)`. The argument can be any valid value, including a key path with dots and array indexers (eg. `server.ports[0]`).
+The syntax is a modifier name followed by zero or more arguments enclosed in parentheses, separated by commas like `modifier_name(argument, 123)`. Trailing commas are allowed. The argument can be any valid value, including a key path with dots and array indexers (eg. `server.ports[0]`).
 
 If the parser recognizes the modifier name (eg. a built-in like `ref()`), it replaces the modifier with the resolved value.
 
 ```bconf
 // ref() resolves to the value at the specified path.
 default_port = ref(server.port)
+
+// Multiple values can be passed to a modifier. Trailing commas are allowed
+timestamp = date("2025-10-09", "UTC",)
+
+// Its valid to use pass no values to a modifier. This may be useful
+// for cases where values are reliant on runtime specific information
+// and don't require any static values to return a result
+active_connections = getNumActiveConnections()
 ```
 
-If the parser encounters an unrecognized modifier, it treats it as a custom modifier. Instead of resolving it, the parser serializes it as a tuple: `[modifier_name, argument]`. When the argument is a key path, it's serialized as a string. This allows the application itself to implement custom logic after the file has been parsed.
+If the parser encounters an unrecognized modifier, it treats it as a custom modifier. Instead of resolving it, the parser serializes it as a tuple: `[modifier_name, ...arguments]`. When the argument is a key path, it's serialized as a string. This allows the application itself to implement custom logic after the file has been parsed.
 
 For example:
 
 ```bconf
 // This allows an application to implement its own date parsing
-// It would be parsed to: ["date", "2025-10-09"]
-last_login = date("2025-10-09")
+// It would be parsed to: ["date", "2025-10-09", "UTC"]
+last_login = date("2025-10-09", "UTC")
 
 // A custom modifier using a key path as an argument
 // It would be parsed to: ["to_upper", "app.name"]
 capitalized_name = to_upper(app.name)
+
+// Modifiers with no arguments should still serialize to a tuple
+// It would be parsed to: ["getNumActiveConnections"] 
+num_active_connections = getNumActiveConnections()
 ```
 
 Implementations may optionally allow users to register their own custom modifiers with the parser, enabling them to be resolved at parse-time. However, this is not required.
