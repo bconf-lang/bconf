@@ -1,49 +1,47 @@
 # bconf
 
-For better configuration files
-
 ## Table of contents
 
--   [Introduction](#introduction)
--   [Comments](#comments)
--   [Key-Value Pairs](#key-value-pairs)
--   [Keys](#keys)
--   [Strings](#strings)
--   [Numbers](#numbers)
--   [Boolean](#boolean)
--   [Null](#null)
--   [Blocks](#blocks)
--   [Maps](#maps)
--   [Arrays](#arrays)
--   [Statements](#statements)
--   [Modifiers](#modifiers)
--   [Variables](#variables)
--   [Built-ins](#built-ins)
-    -   [Reserved Keys](#reserved-keys)
-        -   [import](#import)
-        -   [export](#export)
-        -   [extends](#extends)
-    -   [Modifiers](#modifiers)
-        -   [ref()](#ref)
-        -   [env()](#env)
-        -   [string()](#string)
-        -   [number()](#number)
-        -   [int()](#int)
-        -   [float()](#float)
-        -   [bool()](#bool)
+- [Introduction](#introduction)
+- [Comments](#comments)
+- [Key-Value Pairs](#key-value-pairs)
+- [Keys](#keys)
+- [Strings](#strings)
+- [Numbers](#numbers)
+- [Boolean](#boolean)
+- [Null](#null)
+- [Blocks](#blocks)
+- [Maps](#maps)
+- [Arrays](#arrays)
+- [Statements](#statements)
+- [Modifiers](#modifiers)
+- [Variables](#variables)
+- [Built-ins](#built-ins)
+    - [Reserved Keys](#reserved-keys)
+        - [import](#import)
+        - [export](#export)
+        - [extends](#extends)
+    - [Modifiers](#modifiers)
+        - [ref()](#ref)
+        - [env()](#env)
+        - [string()](#string)
+        - [number()](#number)
+        - [int()](#int)
+        - [float()](#float)
+        - [bool()](#bool)
 
 ## Introduction
 
 Every bconf document must follow these basic rules:
 
--   Files must be UTF-8 encoded
--   Newlines are either LF (`\n`) or CRLF (`\r\n`)
--   Whitespace refers to spaces and/or tabs
--   bconf is case-sensitive, so `key` is different from `Key`
--   Values are not hoisted; variables, imports, etc., must be declared before they are used.
--   The root of the document is always a [block](#block) and follows the same rules (eg. semi-colons/newlines as a delimiter). The root is not required to be wrapped in curly-braces, however, it must be the first valid token if so.
--   A primitive value is a simple, single value. These are `strings`, `numbers`, `booleans`, or `null`.
--   Parsers should preserve the order that key-value pairs, statements, etc. appear in text (ie. parse the file top to bottom), however, insertion order does not need to be preserved when converted to native data structures.
+- Files must be UTF-8 encoded
+- Newlines are either LF (`\n`) or CRLF (`\r\n`)
+- Whitespace refers to spaces and/or tabs
+- bconf is case-sensitive, so `key` is different from `Key`
+- Values are not hoisted; variables, imports, etc., must be declared before they are used.
+- The root of the document is always a [block](#block) and follows the same rules (eg. semi-colons/newlines as a delimiter). The root is not required to be wrapped in curly-braces, however, it must be the first valid token if so.
+- A primitive value is a simple, single value. These are `strings`, `numbers`, `booleans`, or `null`.
+- Parsers should preserve the order that key-value pairs, statements, etc. appear in text (ie. parse the file top to bottom), however, insertion order does not need to be preserved when converted to native data structures.
 
 ## Comments
 
@@ -63,14 +61,14 @@ The fundamental building block of a bconf document is the key-value pair. Pairs 
 
 A value must be one of the following types:
 
--   [Strings](#strings)
--   [Numbers](#numbers)
--   [Boolean](#boolean)
--   [Null](#null)
--   [Blocks](#blocks)
--   [Arrays](#arrays)
--   [Modifiers](#modifiers)
--   [Variables](#variables)
+- [Strings](#strings)
+- [Numbers](#numbers)
+- [Boolean](#boolean)
+- [Null](#null)
+- [Blocks](#blocks)
+- [Arrays](#arrays)
+- [Modifiers](#modifiers)
+- [Variables](#variables)
 
 Every key must be assigned a value. A key declaration without a value is invalid.
 
@@ -158,7 +156,7 @@ bare-key = "value"
 サーバー設定 = { ... } // Valid Unicode characters
 ```
 
-`true`, `false`, and `null` are considered valid keys and will *always* resolve to a string. Their respective types do not carry any meaning when they are used as a key. They can still be used as a value.
+`true`, `false`, and `null` are considered valid keys and will _always_ resolve to a string. Their respective types do not carry any meaning when they are used as a key. They can still be used as a value.
 
 ```bconf
 true = "value" // VALID: `true` can be used as a key
@@ -228,7 +226,7 @@ data.users[0] = "Alice" // data.users becomes ["Alice"]
 // Chain array indexes for multi-dimensional array access
 multi_dimensional_index[0][1] = "nested"
 
-// VALID: Negative indexes are ok - this will assign the last value in the array 
+// VALID: Negative indexes are ok - this will assign the last value in the array
 data.users[-1] = "Bob"
 
 // INVALID: Index accessor must be attached to a key
@@ -240,7 +238,7 @@ data.users[+1] = "John"
 // Given this non-array value:
 not_an_array = "hello"
 
-// VALID: the previous value will be replaced with an array that has "H" at index 0 
+// VALID: the previous value will be replaced with an array that has "H" at index 0
 not_an_array[0] = "H"
 ```
 
@@ -254,7 +252,7 @@ A map index accessor must always be associated with a key; it cannot stand alone
 
 ```bconf
 // Create a new map and assign a value for key `foo`
-// new_map becomes <foo: "world"> 
+// new_map becomes <foo: "world">
 new_map[foo] = "world"
 
 // Overwrite a value in an existing array
@@ -272,7 +270,7 @@ multi_dimensional_index[first][second] = "nested"
 // Given this non-map value:
 not_a_map = "hello"
 
-// VALID: the previous value will be replaced with a map that has "H" at key `hello` 
+// VALID: the previous value will be replaced with a map that has "H" at key `hello`
 not_a_map[hello] = "H"
 ```
 
@@ -433,7 +431,7 @@ A map is a collection of key-value pairs where insertion order is preserved. Onl
 map = <foo: "bar", baz: "foo", "$another_key": 123>
 ```
 
-Similar to arrays, items in a map can be indexed using their key wrapped in square brackets (`[]`). If 
+Similar to arrays, items in a map can be indexed using their key wrapped in square brackets (`[]`). If
 
 Items indexed using a key that does not yet exist in the list should be appended to the end of the map, while indexing with a key that does exist in the map should update the value in its existing position.
 
@@ -443,9 +441,10 @@ map[baz] = null
 map[bar] = "foo" // Will be inserted at the end of the list
 ```
 
-Implementations *must* preserve the insertion order of map entries when deserializing to native data structures. 
+Implementations _must_ preserve the insertion order of map entries when deserializing to native data structures.
 
 For languages without native ordered map support, implementations must use an alternative data structure that maintains insertion order, such as:
+
 - A array of key-value pairs
 - A composite structure combining an ordered key list with a hash table
 
@@ -474,11 +473,9 @@ mixed_array = [
 
 ## Statements
 
-Statements provide a special syntax for creating configurations that read like a sentence or command. A statement consists of a key followed by a series of space-separated values.
+Statements provide a special syntax for creating configurations that read like a sentence or command. A statement consists of a key followed by a series of space-separated values. Statements exist independently from key-value pairs and do not interact with them — a statement key and a key-value pair can share the same name in the same scope without conflict. Statements are stripped from the resolved document and are purely processed at parse time.
 
-Defining a statement with the same key multiple times appends a new list of values to a 2D array, rather than overwriting the previous entry.
-
-For example, this:
+Defining a statement with the same key multiple times is valid.
 
 ```bconf
 allow from "192.168.1.1"
@@ -486,39 +483,29 @@ allow from "10.0.0.0/8"
 allow from server.host[0]
 ```
 
-Is parsed into a structure like this (represented as JSON):
-
-```json
-{
-	"allow": [
-		["from", "192.168.1.1"],
-		["from", "10.0.0.0/8"],
-		["from", "server.host[0]"]
-	]
-}
-```
-
 The values following the key in a statement can be any of the following types:
 
--   Primitives
--   Blocks
--   Arrays
--   Modifiers
--   Variables
--   Bare keys
-    - These are parsed as a string. Dotted keys and array index accessors are allowed, with the full key being resolved to a string (eg. `foo.bar[0]`) 
+- Primitives
+- Blocks
+- Arrays
+- Modifiers
+- Variables
+- Bare keys
+    - These are parsed as a string. Dotted keys and array index accessors are allowed, with the full key being resolved to a string (eg. `foo.bar[0]`)
 
 To avoid ambiguity, implementations must prioritize matching standard value types first. For instance, `true` will always be parsed as a boolean, and `123.1` as a number BEFORE being parsed as a bare key. Only if a value does not match any other type will it be treated as an unquoted string.
+
+Parsers and language servers are encouraged to emit a warning when a key is used as both a statement and a key-value pair within the same scope, as this may indicate unintentional overlap.
+
+Implementations must allow users to register custom statement handlers with the parser. If a statement is encountered and no handler is registered for its key, it is invalid.
 
 Important: This syntax is only considered a statement if the value immediately after the key is not a block (`{`). A key followed directly by a block is an [implicit key-value](#implicit) pair.
 
 ## Modifiers
 
-Modifiers act like functions that process or generate a value during parsing.
+Modifiers act like functions that process or generate a value during parsing. Every modifier must resolve to a value — if a modifier is unrecognized or cannot be resolved, it is invalid. Implementations must allow users to register custom modifiers with the parser.
 
 The syntax is a modifier name followed by zero or more arguments enclosed in parentheses, separated by commas like `modifier_name(argument, 123)`. Trailing commas are allowed. The argument can be any valid value, including a key path with dots and array indexers (eg. `server.ports[0]`).
-
-If the parser recognizes the modifier name (eg. a built-in like `ref()`), it replaces the modifier with the resolved value.
 
 ```bconf
 // ref() resolves to the value at the specified path.
@@ -527,31 +514,11 @@ default_port = ref(server.port)
 // Multiple values can be passed to a modifier. Trailing commas are allowed
 timestamp = date("2025-10-09", "UTC",)
 
-// Its valid to use pass no values to a modifier. This may be useful
+// It's valid to use pass no values to a modifier. This may be useful
 // for cases where values are reliant on runtime specific information
 // and don't require any static values to return a result
 active_connections = getNumActiveConnections()
 ```
-
-If the parser encounters an unrecognized modifier, it treats it as a custom modifier. Instead of resolving it, the parser serializes it as a tuple: `[modifier_name, ...arguments]`. When the argument is a key path, it's serialized as a string. This allows the application itself to implement custom logic after the file has been parsed.
-
-For example:
-
-```bconf
-// This allows an application to implement its own date parsing
-// It would be parsed to: ["date", "2025-10-09", "UTC"]
-last_login = date("2025-10-09", "UTC")
-
-// A custom modifier using a key path as an argument
-// It would be parsed to: ["to_upper", "app.name"]
-capitalized_name = to_upper(app.name)
-
-// Modifiers with no arguments should still serialize to a tuple
-// It would be parsed to: ["getNumActiveConnections"] 
-num_active_connections = getNumActiveConnections()
-```
-
-Implementations may optionally allow users to register their own custom modifiers with the parser, enabling them to be resolved at parse-time. However, this is not required.
 
 ## Variables
 
@@ -595,7 +562,7 @@ app {
 default_port = $port
 ```
 
-Since only blocks can define new scopes, variables cannot be defined inside a dotted key. For example, `app.$port` would be invalid since no new scope is created and any scope previously created for `app` would no longer available. However, something like `$port.app` would be valid since it is defining a variable in the current scope.
+Since only blocks can define new scopes, variables cannot be defined as a segment within a dotted key. For example, `app.$port` would be invalid because dotted keys do not create a scope, so there is no scope for `$port` to be defined in. However, something like `$port.app` would be valid since `$port` is the key being defined in the current scope, with `.app` being a nested extension of it.
 
 ## Built-ins
 
@@ -621,8 +588,8 @@ name = $app_name
 
 It's important to understand the difference between a variable's actual value (the data to be imported and what should actually be used) and the import instruction (the values assigned to the variable inside the import statement block).
 
--   Actual Value: This is the value defined for the variable in the source file. It's the value that will be made available in your current file.
--   Import Instruction: This is the value assigned to the variable inside the import statement block. This defines what/how a variable should be imported
+- Actual Value: This is the value defined for the variable in the source file. It's the value that will be made available in your current file.
+- Import Instruction: This is the value assigned to the variable inside the import statement block. This defines what/how a variable should be imported
 
 ```bconf
 // common.bconf
@@ -642,9 +609,9 @@ app.name = $app_name // The value here is "My Awesome App"
 
 An import instruction must be `true`, `false`, or an `alias statement`. Any other value or statement is invalid. The following is the expected logic for each valid value:
 
--   `true` (shorthand or explicit): Imports the actual value of the variable under its original name.
--   `false`: Does not import the variable.
--   `$variable as $aliased` (alias statement): Imports the actual value of the variable under a new alias specified after `as`.
+- `true` (shorthand or explicit): Imports the actual value of the variable under its original name.
+- `false`: Does not import the variable.
+- `$variable as $aliased` (alias statement): Imports the actual value of the variable under a new alias specified after `as`.
 
 ```bconf
 import from "path/to/file.bconf" {
@@ -701,8 +668,8 @@ Inside the block, variable key names can either be a reference to a variable alr
 
 An export instruction is `true` or an `alias statement`. Any other value can immediately be considered as an inline definition. Any other statement is invalid. The following is the expected logic for each valid export instruction:
 
--   `true` (shorthand or explicit): If there is a variable defined before the export statement with the same name in the document, it is considered a reference. Otherwise, if there is no matching name, it is an inline definition where the value is `true`.
--   `$variable as $alias` (alias statement): Exports the actual value of the variable under a new alias specified after `as`.
+- `true` (shorthand or explicit): If there is a variable defined before the export statement with the same name in the document, it is considered a reference. Otherwise, if there is no matching name, it is an inline definition where the value is `true`.
+- `$variable as $alias` (alias statement): Exports the actual value of the variable under a new alias specified after `as`.
 
 ```bconf
 $app_name = "My App"
@@ -814,11 +781,11 @@ environment = env("APP_ENV")
 
 Converts a value to its string representation.. The following are valid values which can be converted to a string - any other value is invalid:
 
--   `variable` / `modifier`: These should be resolved first and then follow the rules below
--   `number`: The value should be quoted (eg. `"123"`, `"123.45"`, `"123.45e6"`)
--   `boolean`: The value should be quoted (eg. `"true"`, `"false"`)
--   `null`: The value should be quoted (eg. `"null"`)
--   `string`: There is nothing needed for converting a string to a string. It should resolve to the same value
+- `variable` / `modifier`: These should be resolved first and then follow the rules below
+- `number`: The value should be quoted (eg. `"123"`, `"123.45"`, `"123.45e6"`)
+- `boolean`: The value should be quoted (eg. `"true"`, `"false"`)
+- `null`: The value should be quoted (eg. `"null"`)
+- `string`: There is nothing needed for converting a string to a string. It should resolve to the same value
 
 ```bconf
 $variable = 321
@@ -835,12 +802,12 @@ string_modifier6 = string($variable) // "321"
 
 Converts a value to a number, inferring an integer or float type. The following are valid values which can be converted to a number - any other value is invalid:
 
--   `variable` / `modifier`: These should be resolved first and then follow the rules below
--   `true`: Always resolves to `1`
--   `false`: Always resolves to `0`
--   `null`: Always resolves to `0`
--   `string`: The value of a string must strictly follow the integer/float syntax. If there is any other character is encountered, it is invalid
--   `number`: There is nothing needed for converting a number to a number. It should resolve to the same value
+- `variable` / `modifier`: These should be resolved first and then follow the rules below
+- `true`: Always resolves to `1`
+- `false`: Always resolves to `0`
+- `null`: Always resolves to `0`
+- `string`: The value of a string must strictly follow the integer/float syntax. If there is any other character is encountered, it is invalid
+- `number`: There is nothing needed for converting a number to a number. It should resolve to the same value
 
 ```bconf
 $variable = "some string"
@@ -862,13 +829,13 @@ To convert specifically to an integer or float, see [int()](#int) and [float()](
 
 Converts a value to an integer. The following are valid values which can be converted to a integer - any other value is invalid:
 
--   `variable` / `modifier`: These should be resolved first and then follow the rules below
--   `true`: Always resolves to `1`
--   `false`: Always resolves to `0`
--   `null`: Always resolves to `0`
--   `string`: A string must follow a number syntax. If there is any other character, it is invalid. It should first be converted to its correct number type (float or integer) and then follow the rules below
--   `float`: The value is truncated. Exponents must be evaluated first before truncating the value
--   `integer`: There is nothing needed for converting an int to an int. It should resolve to the same value
+- `variable` / `modifier`: These should be resolved first and then follow the rules below
+- `true`: Always resolves to `1`
+- `false`: Always resolves to `0`
+- `null`: Always resolves to `0`
+- `string`: A string must follow a number syntax. If there is any other character, it is invalid. It should first be converted to its correct number type (float or integer) and then follow the rules below
+- `float`: The value is truncated. Exponents must be evaluated first before truncating the value
+- `integer`: There is nothing needed for converting an int to an int. It should resolve to the same value
 
 ```bconf
 $variable = "invalid number"
@@ -888,13 +855,13 @@ int_modifier9 = int("-123_456") // -123456
 
 Converts a value to a float. The following are valid values which can be converted to a float - any other value is invalid:
 
--   `variable` / `modifier`: These should be resolved first and then follow the rules below
--   `true`: Always resolves to `1.0`
--   `false`: Always resolves to `0.0`
--   `null`: Always resolves to `0.0`
--   `string`: A string must follow a number syntax. If there is any other character, it is invalid. It should first be converted to it correct number type (float or integer) and then follow the rules below.
--   `integer`: Values resolve to their exact floating point representation (eg. `5` resolves to `5.0`)
--   `float`: There is nothing needed for converting a float to a float. It should resolve to the same value
+- `variable` / `modifier`: These should be resolved first and then follow the rules below
+- `true`: Always resolves to `1.0`
+- `false`: Always resolves to `0.0`
+- `null`: Always resolves to `0.0`
+- `string`: A string must follow a number syntax. If there is any other character, it is invalid. It should first be converted to it correct number type (float or integer) and then follow the rules below.
+- `integer`: Values resolve to their exact floating point representation (eg. `5` resolves to `5.0`)
+- `float`: There is nothing needed for converting a float to a float. It should resolve to the same value
 
 ```bconf
 $variable = "false"
@@ -914,11 +881,11 @@ float_modifier9 = float("-123_456") // -123456.0
 
 Converts a value to a boolean. The following are valid values which can be converted to a boolean - any other value is invalid:
 
--   `variable` / `modifier`: These should be resolved first and then follow the rules below
--   `null`: Always resolves to `false`
--   `string`: Non-empty strings always resolve to `true`, while empty strings are `false`
--   `number`: Any non-zero number always resolved to `true` (including negatives). Only `0`, `0.0` and `-0.0` resolve to `false`
--   `boolean`: There is nothing needed for converting a boolean to a boolean. It should resolve to the same value
+- `variable` / `modifier`: These should be resolved first and then follow the rules below
+- `null`: Always resolves to `false`
+- `string`: Non-empty strings always resolve to `true`, while empty strings are `false`
+- `number`: Any non-zero number always resolved to `true` (including negatives). Only `0`, `0.0` and `-0.0` resolve to `false`
+- `boolean`: There is nothing needed for converting a boolean to a boolean. It should resolve to the same value
 
 ```bconf
 $variable = "non-empty string!"

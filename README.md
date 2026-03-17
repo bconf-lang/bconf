@@ -11,8 +11,6 @@ For better configuration files
 
 bconf is designed with a the following key principles in mind: configuration files should be human readable, easy to maintain, flexible and predictable. The syntax and concepts should be familiar and easy to learn, leveraging constructs found in other data-serialization and programming languages.
 
-Dynamic elements like variables, tags and extending files should be expressed with existing syntax. All syntax should be deserializable into native data structures that make sense _without_ introducing "invisible" keys/values. This ensures all valid bconf files remain 100% statically parsable with predictable data structures.
-
 ## Example
 
 ```bconf
@@ -85,7 +83,7 @@ export vars {
 
 ## Compared to Other Languages
 
-bconf is a data-serialization format designed to be easy to enhance. Compared to other formats, like JSON, YAML and TOML, bconf is minimal and easy to write. Where it differs is an emphasis on scalability for writing large files and expressive ways to write dynamic features. Data types like tags and statements make methods and commands easy to write without it needing to be expressed awkwardly through other data structures. This syntax remains 100% statically deserializable into native data structures.
+bconf is a data-serialization format designed to be easy to enhance. Compared to other formats, like JSON, YAML and TOML, bconf is minimal and easy to write. Where it differs is an emphasis on scalability for writing large files and expressive ways to write dynamic features. Data types like tags and statements make methods and commands easy to write without it needing to be expressed awkwardly through static data structures.
 
 Unlike other data-serialization formats, bconf does not require a strict hierarchy of values to define deeply nested values. Values can be assigned using deeply nested keys and array indexes. Arrays can also have values pushed to it with an append operator.
 
