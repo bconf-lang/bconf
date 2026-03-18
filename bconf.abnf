@@ -26,9 +26,17 @@ statement-item	= value / key
 comment			= "//" *( comment-char )
 
 ; -----------------------
+; Alternative 
+; -----------------------
+alternative = LPAREN OWSP [ PIPE OWSP ] branch *( OWSP PIPE OWSP branch ) OWSP RPAREN  
+branch = conditional-branch / value
+conditional-branch  = condition "=>" value 
+condition = modifier / variable-key ; Implementations must ensure that the values produced are booleans 
+
+; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / block / array / modifier / variable-key
+value			= primitive / block / array / modifier / alternative / variable-key
 primitive		= string / number / bool / null
 modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
 modifier-item		= value / key
@@ -73,7 +81,7 @@ comment-char	= HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable cha
 string-char		= %x20-21 / %x23-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars (ie. ", \). Unescaped $ are allowed since embed sequences must have { following it.
 multiline-char	= HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
 
-embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier ) OWSP RBRACE
+embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier / alternative ) OWSP RBRACE
 escaped-char		= "\" ( 
 	%x22 /			; "				quotation mark
 	%x5C /			; \				backslash
@@ -107,6 +115,7 @@ DOLLARSIGN		= "$"
 HYPHEN-MINUS	= "-"
 PLUS			= "+"
 UNDERSCORE 		= "_"
+PIPE            = "|"
 
 ; -----------------------
 ; Core ABNF Rules (included for clarity)

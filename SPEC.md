@@ -16,12 +16,13 @@
 - [Statements](#statements)
 - [Modifiers](#modifiers)
 - [Variables](#variables)
+- [Alternatives](#alternatives)
 - [Built-ins](#built-ins)
     - [Reserved Keys](#reserved-keys)
         - [import](#import)
         - [export](#export)
         - [extends](#extends)
-    - [Modifiers](#modifiers)
+    - [Modifiers](#modifiers-1)
         - [ref()](#ref)
         - [defined()](#defined)
         - [env()](#env)
@@ -317,7 +318,7 @@ The following escape sequences are reserved. Using any other escape sequence (eg
 
 Any Unicode character may be escaped with the `\uHHHH` or `\UHHHHHHHH` forms and must be Unicode scalar values.
 
-You can embed values in a string using the `${...}` syntax. The fully resolved value must be a primitive such that the values can be converted into a string. Resolved values that are not a primitive value (like blocks and arrays) are invalid. Variables and modifiers must also resolve to a primitive value.
+You can embed values in a string using the `${...}` syntax. The fully resolved value must be a primitive such that the values can be converted into a string. Resolved values that are not a primitive value (like blocks and arrays) are invalid. Variables, modifiers and alternative expressions must also resolve to a primitive value.
 
 ```bconf
 $variable = "embedded value"
@@ -526,6 +527,8 @@ timestamp = date("2025-10-09", "UTC",)
 active_connections = getNumActiveConnections()
 ```
 
+Important: This syntax is only considered a modifier if there is an identifier before the opening parenthesis (`(`). Parentheses without a preceding identifier are an [alternatives](#alternatives) expression.
+
 ## Variables
 
 Variables let you define a value once and reuse it. They follow the same rules as a standard key-value pair, however, a variable name must start with a dollar sign (`$`) and must be defined before it is used. Variable definitions are not included in the final parsed output.
@@ -569,6 +572,113 @@ default_port = $port
 ```
 
 Since only blocks can define new scopes, variables cannot be defined as a segment within a dotted key. For example, `app.$port` would be invalid because dotted keys do not create a scope, so there is no scope for `$port` to be defined in. However, something like `$port.app` would be valid since `$port` is the key being defined in the current scope, with `.app` being a nested extension of it.
+
+## Alternatives
+
+An alternatives expression provides a syntax for expressing a set of potential values called [branches](#branches). It is wrapped in parentheses without a leading identifier and consists of one or more branches separated by a pipe (`|`). A name followed by parentheses is always a [modifier](#modifiers).
+
+A leading pipe is allowed so branches can be formatted across multiple lines.
+
+```bconf
+inline_alternative = (branch_a | branch_b | branch_c)
+multiline_alternative = (
+    | branch_a
+    | branch_b
+    | branch_c
+)
+```
+
+Branches can be conditional, where a boolean-producing value (modifier, variable, alternative expression, boolean literal) is followed by an arrow (`=>`) and value. The boolean-producing value is called a `condition` and must _always_ be a boolean. Conditions of other types such as numbers, strings or null are invalid.
+
+When an alternatives expression is used as a condition, it must itself resolve to a boolean. If it resolves to any other type, parsing must fail.
+
+```bconf
+$is_prod = eq($env, "prod")
+
+// VALID: $is_prod is a boolean variable
+port1 = ($is_prod => 443 | 8080)
+
+// VALID: an alternatives expression used as a condition must resolve to a boolean
+port2 = ((eq($env, "prod") => true | false) => 443 | 8080)
+
+// INVALID: the alternatives expression resolves to a number, not a boolean
+port3 = ((eq($env, "prod") => 443 | 8080) => 9000 | 3000)
+```
+
+Branches are always evaluated strictly left to right, top to bottom. Evaluation stops as soon as a branch produces a value — remaining branches are never considered.
+
+Values in conditional branches must only be used if the condition evaluates to `true`. If it evaluates to `false`, evaluation moves to the next branch.
+
+```bconf
+// eq() is a conditional branch because it is followed by =>
+port4 = (eq($env, "prod") => 443 | 8080)
+
+// ref() is a regular branch because it is not followed by =>
+port5 = (eq($env, "prod") => 443 | ref(server.default_port))
+
+$is_enabled = true
+
+// VALID: $is_enabled is a boolean variable
+port6 = ($is_enabled => 443 | 8080)
+
+$portToUse = 8080
+
+// INVALID: $portToUse is not a boolean
+port7 = ($portToUse => 443 | 8080)
+```
+
+An alternatives expression _must_ always produce a value, including `null`. If no branches produce a value, it is invalid and parsing must fail. For example, an alternatives expression consisting of only conditional branches may not produce a result if no conditions are met, and thus parsing will fail.
+
+```bconf
+// VALID: The last branch acts as a fallback/default value if no conditions are met for
+// the conditional branches
+port1 = (
+    | eq($env, "prod") => 443
+    | eq($env, "staging") => 3000
+    | 8080
+)
+
+// INVALID: No fallback is defined, so if `$env` is neither `"prod"` nor `"staging`",
+// then no branch produces a value and parsing fails
+port2 = (
+    | eq($env, "prod") => 443
+    | eq($env, "staging") => 3000
+)
+```
+
+### Nested Alternatives
+
+A branch result can itself be an alternatives expression, allowing conditions to be chained to arbitrary depth. Each nested expression is entirely self-contained — it has no awareness of its parent and does not interact with it in any direction.
+
+This has two important consequences:
+
+1. A nested expression that fails does not fall through to the parent
+2. A resolved nested expression immediately produces the final value
+
+If a nested expression has no fallback and no condition is met, parsing fails immediately. The parent expression does not continue evaluating its remaining branches.
+
+In the following example, if `$env` is `"prod"` but `$region` is not `"us-east"`, parsing fails and does not fall back to `"localhost"`. The moment `eq($env, "prod")` is true, the parent is committed and the nested expression is responsible for producing a value.
+
+```bconf
+outer = (
+    | eq($env, "prod") => (eq($region, "us-east") => "us-east.example.com")
+    | "localhost"
+)
+```
+
+Once a value is returned at any depth, evaluation stops entirely. The parent does not re-evaluate its remaining branches, and no other nested expressions in the chain are considered.
+
+In this example, if `$env` is `"prod"` and `$region` is `"us-east"`, the result is `"us-east.example.com"`. The `eq($env, "staging")` branch and the `"localhost"` fallback are never evaluated.
+
+```bconf
+result = (
+    | eq($env, "prod") => (eq($region, "us-east") => "us-east.example.com" | "prod.example.com")
+    | eq($env, "staging") => "staging.example.com"
+    | "localhost"
+)
+```
+
+Parsers may expose a configurable depth limit for nested alternatives expressions. No hard limit is defined by the spec, but implementations are encouraged to provide a sensible default.
 
 ## Built-ins
 
