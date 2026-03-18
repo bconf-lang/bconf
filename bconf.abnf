@@ -36,7 +36,7 @@ condition = modifier / variable-key ; Implementations must ensure that the value
 ; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / block / array / modifier / alternative / variable-key
+value			= primitive / block / map / array / modifier / alternative / variable-key
 primitive		= string / number / bool / null
 modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
 modifier-item		= value / key
