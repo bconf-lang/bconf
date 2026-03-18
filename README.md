@@ -54,11 +54,19 @@ database.replicas = [
 database.replicas[0].read_only = true
 database.replicas[1].read_only = false
 
+database.meta[primary] = ref(database.primary.host)
+database.meta[replica_count] = 2
+database.region_map = <us-east: "us-east-1", us-west: "us-west-2", eu: "eu-central-1">
+database.primary.region = ref(database.region_map[us-east])
+
 plugins << {
     name = "authentication"
     config {
         jwt_secret = env("JWT_SECRET")
-        token_expiry = "1h"
+        token_expiry = (
+            | eq($env, "prod") => "1hr"
+            | "6hr
+        )
     }
 }
 
