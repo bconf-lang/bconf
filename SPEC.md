@@ -23,12 +23,18 @@
         - [extends](#extends)
     - [Modifiers](#modifiers)
         - [ref()](#ref)
+        - [defined()](#defined)
         - [env()](#env)
         - [string()](#string)
         - [number()](#number)
         - [int()](#int)
         - [float()](#float)
         - [bool()](#bool)
+        - [eq()](#eq)
+        - [lt()](#lt)
+        - [lte()](#lte)
+        - [gt()](#gt)
+        - [gte()](#gte)
 
 ## Introduction
 
@@ -769,6 +775,25 @@ bar = ref(foo)
 
 Key paths that start with a variable are not expected to work as variables should be resolved first (eg. `ref($foo.bar)`). So the resulting value provided to the `ref()` modifier will not be a key path and is therefore invalid.
 
+#### defined()
+
+Returns `true` if a value has been assigned to the given key path, including `null`. Returns `false` if the key has not been defined at the time the modifier is evaluated. The argument must be a key path.
+
+```bconf
+server.port = 8080
+defined_modifier1 = defined(server.port) // true
+
+explicit_null = null
+defined_modifier2 = defined(explicit_null) // true - null is still a defined value
+
+// INVALID: argument must be a key path
+defined_modifier3 = defined("some string")
+defined_modifier4 = defined(123)
+
+// false - `undefined_key` has not been assigned a value at this point
+defined_modifier5 = defined(undefined_key)
+```
+
 #### env()
 
 Reads the value of an operating system environment variable. The argument must be a string. It is invalid if the environment variable does not exist when parsing.
@@ -896,4 +921,76 @@ bool_modifier2 = bool(0) // false
 bool_modifier4 = bool(null) // false
 bool_modifier5 = bool($variable) // true - since it resolves to a non-empty string
 bool_modifier6 = bool("") // false
+```
+
+#### eq()
+
+Compare two values for equality, returning a boolean. If the two values are of different types (ie. comparing a string to a number), the values will never be equal and must return `false`. Variables and modifiers must be resolved before the comparison is made.
+
+Blocks, arrays and maps are valid values but are not comparable. Any comparison that involving a block, array or map must always return false.
+
+```bconf
+eq_modifier1 = eq(1, 1)           // true
+eq_modifier2 = eq(1, 2)           // false
+eq_modifier3 = eq("foo", "foo")   // true
+eq_modifier4 = eq("foo", "bar")   // false
+eq_modifier5 = eq(true, true)     // true
+eq_modifier6 = eq(true, false)    // false
+eq_modifier7 = eq(null, null)     // true
+eq_modifier8 = eq(1, "1") // false: comparing different types
+eq_modifier9 = eq(true, 1) // false: comparing different types
+eq_modifier10 = eq([], []) // false: comparing arrays
+eq_modifier11 = eq({}, 1) // false: comparison includes a block
+```
+
+#### lt()
+
+Returns a boolean for if the first argument is less than the second. If any value is not a number, it is invalid. Variables and modifiers must be resolved before the comparison is made.
+
+```bconf
+lt_modifier1 = lt(1, 2) // true
+lt_modifier2 = lt(2, 1) // false
+lt_modifier3 = lt(1, 1) // false
+
+// INVALID: arguments must be numbers
+lt_modifier4 = lt("a", "b")
+```
+
+#### lte()
+
+Returns a boolean for if the first argument is less than or equal to the second. If any value is not a number, it is invalid. Variables and modifiers must be resolved before the comparison is made.
+
+```bconf
+lte_modifier1 = lte(1, 2)   // true
+lte_modifier2 = lte(1, 1)   // true
+lte_modifier3 = lte(2, 1)   // false
+
+// INVALID: arguments must be numbers
+lte_modifier4 = lte("a", "b")
+```
+
+#### gt()
+
+Returns a boolean for if the first argument is greater than the second. If any value is not a number, it is invalid. Variables and modifiers must be resolved before the comparison is made.
+
+```bconf
+gt_modifier1 = gt(2, 1)     // true
+gt_modifier2 = gt(1, 2)     // false
+gt_modifier3 = gt(1, 1)     // false
+
+// INVALID: arguments must be numbers
+gt_modifier4 = gt("b", "a")
+```
+
+#### gte()
+
+Returns a boolean for if the first argument is greater than or equal to the second. If any value is not a number, it is invalid. Variables and modifiers must be resolved before the comparison is made.
+
+```bconf
+gte_modifier1 = gte(2, 1)   // true
+gte_modifier2 = gte(1, 1)   // true
+gte_modifier3 = gte(1, 2)   // false
+
+// INVALID: arguments must be numbers
+gte_modifier4 = gte("b", "a")
 ```
