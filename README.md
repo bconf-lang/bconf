@@ -61,7 +61,7 @@ plugins << {
         jwt_secret = env("JWT_SECRET")
         token_expiry = (
             | eq($env, "prod") => "1hr"
-            | "6hr
+            | "6hr"
         )
     }
 }
