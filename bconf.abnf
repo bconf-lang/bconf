@@ -36,14 +36,12 @@ condition = modifier / variable-key ; Implementations must ensure that the value
 ; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / block / map / array / modifier / alternative / variable-key
+value			= primitive / block / array / modifier / alternative / variable-key
 primitive		= string / number / bool / null
 modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
 modifier-item		= value / key
 block			= LBRACE OWSP [ block-item *( ( SEMICOLON / NEWLINE ) OWSP block-item ) [ block-sep ] ] OWSP RBRACE
 block-item = item / spread-expr
-map			= LANGLEBRACKET OWSP [ map-member *( comma-sep map-member ) [ comma-sep ] ] OWSP RANGLEBRACKET
-map-member		= text-key OWSP COLON OWSP value
 array			= LBRACKET OWSP [ array-item *( comma-sep array-item ) [ comma-sep ] ] OWSP RBRACKET
 array-item = value / spread-expr
 comma-sep		= OWSP COMMA OWSP
