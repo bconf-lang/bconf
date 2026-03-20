@@ -12,123 +12,123 @@
 ; core features such as `import`, `extends` and `exports` conform to the grammar, they are
 ; defined by their behaviour and specific implementation.
 
-bconf		= OWSP [ LBRACE ] [ OWSP ] [ item *( block-sep OWSP item ) [ block-sep ] ] [ OWSP ] [ RBRACE ] OWSP
-item		= key-value / statement / key / comment
-block-sep	= OWSP ( SEMICOLON / NEWLINE ) OWSP
+bconf      = OWSP [ LBRACE ] [ OWSP ] [ item *( block-sep OWSP item ) [ block-sep ] ] [ OWSP ] [ RBRACE ] OWSP
+item       = key-value / statement / key / comment
+block-sep  = OWSP ( SEMICOLON / NEWLINE ) OWSP
 
 ; -----------------------
 ; Core Statements
 ; -----------------------
-key-value		= key OWSP ( "=" / "<<" ) OWSP value
-key-value		=/ key OWSP block
-statement		= key 1*WSP 1*( statement-item [ 1*WSP ] )
-statement-item	= value / key 
-comment			= "//" *( comment-char )
+key-value       = key OWSP ( "=" / "<<" ) OWSP value
+key-value       =/ key OWSP block
+statement       = key 1*WSP 1*( statement-item [ 1*WSP ] )
+statement-item  = value / key 
+comment         = "//" *( comment-char )
 
 ; -----------------------
 ; Alternative 
 ; -----------------------
-alternative = LPAREN OWSP [ PIPE OWSP ] branch *( OWSP PIPE OWSP branch ) OWSP RPAREN  
-branch = conditional-branch / value
+alternative         = LPAREN OWSP [ PIPE OWSP ] branch *( OWSP PIPE OWSP branch ) OWSP RPAREN  
+branch              = conditional-branch / value
 conditional-branch  = condition "=>" value 
-condition = modifier / variable-key ; Implementations must ensure that the values produced are booleans 
+condition           = modifier / variable-key ; Implementations must ensure that the values produced are booleans 
 
 ; -----------------------
 ; Values & Data Structures
 ; -----------------------
-value			= primitive / block / array / modifier / alternative / variable-key
-primitive		= string / number / bool / null
-modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
-modifier-item		= value / key
-block			= LBRACE OWSP [ block-item *( ( SEMICOLON / NEWLINE ) OWSP block-item ) [ block-sep ] ] OWSP RBRACE
-block-item = item / spread-expr
-array			= LBRACKET OWSP [ array-item *( comma-sep array-item ) [ comma-sep ] ] OWSP RBRACKET
-array-item = value / spread-expr
-comma-sep		= OWSP COMMA OWSP
-spread-expr		= 3PERIOD spread-source
-spread-source	= variable-path / modifier / array / block 
+value          = primitive / block / array / modifier / alternative / variable-key
+primitive      = string / number / bool / null
+modifier       = bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
+modifier-item  = value / key
+block          = LBRACE OWSP [ block-item *( ( SEMICOLON / NEWLINE ) OWSP block-item ) [ block-sep ] ] OWSP RBRACE
+block-item     = item / spread-expr
+array          = LBRACKET OWSP [ array-item *( comma-sep array-item ) [ comma-sep ] ] OWSP RBRACKET
+array-item     = value / spread-expr
+comma-sep      = OWSP COMMA OWSP
+spread-expr    = 3PERIOD spread-source
+spread-source  = variable-path / modifier / array / block 
 
 ; -----------------------
 ; Keys & Variables
 ; -----------------------
-key					= key-path / variable-path
-key-path			= text-key *( ( PERIOD text-key ) / *( index-accessor ) )
-text-key			= bare-key / singleline-strinr
-bare-key	= 1*( %x21 / %x23 / %x25-26 / %x2A-%x2B / %x2D / %x30-%x3A / %x3F-%x5A / %x5E-%x7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; Printable chars, no controls or special characters (", $, ', (, ), comma, ., /, ;, <, =, >, [, \, ] {, |, })
-index-accessor		= LBRACKET OWSP ( text-key / integer ) OWSP RBRACKET ; Integer for arrays and text-key for maps 
-variable-key		= DOLLARSIGN bare-key
-variable-path		= variable-key *( ( PERIOD text-key ) / *( index-accessor ) )
+key             = key-path / variable-path
+key-path        = text-key *( ( PERIOD text-key ) / *( index-accessor ) )
+text-key        = bare-key / singleline-strinr
+bare-key        = 1*( %x21 / %x23 / %x25-26 / %x2A-%x2B / %x2D / %x30-%x3A / %x3F-%x5A / %x5E-%x7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; Printable chars, no controls or special characters (", $, ', (, ), comma, ., /, ;, <, =, >, [, \, ] {, |, })
+index-accessor  = LBRACKET OWSP ( text-key / integer ) OWSP RBRACKET ; Integer for arrays and text-key for maps 
+variable-key    = DOLLARSIGN bare-key
+variable-path   = variable-key *( ( PERIOD text-key ) / *( index-accessor ) )
 
 ; -----------------------
 ; Primitives
 ; -----------------------
-string				= multiline-string / singleline-string
-singleline-string	= DQUOTE *( string-char / escaped-char / embedded-value ) DQUOTE
-multiline-string	= 3DQUOTE *( multiline-char / escaped-char / embedded-value ) 3DQUOTE
+string             = multiline-string / singleline-string
+singleline-string  = DQUOTE *( string-char / escaped-char / embedded-value ) DQUOTE
+multiline-string   = 3DQUOTE *( multiline-char / escaped-char / embedded-value ) 3DQUOTE
 
-number			= float / integer
-number-prefix	= HYPHEN-MINUS / PLUS
-integer			= [ number-prefix ] dec-int
-float			= [ number-prefix ] ( ( dec-int PERIOD [ dec-int ] [ exponent ] ) / ( dec-int exponent ) )
-dec-int			= DIGIT *( [ UNDERSCORE ] DIGIT )
-exponent		= "e" integer
+number         = float / integer
+number-prefix  = HYPHEN-MINUS / PLUS
+integer        = [ number-prefix ] dec-int
+float          = [ number-prefix ] ( ( dec-int PERIOD [ dec-int ] [ exponent ] ) / ( dec-int exponent ) )
+dec-int        = DIGIT *( [ UNDERSCORE ] DIGIT )
+exponent       = "e" integer
 
-bool			= %s"true" / %s"false"
-null			= %s"null"
+bool = %s"true" / %s"false"
+null = %s"null"
 
 ; -----------------------
 ; Allowed Characters
 ; -----------------------
-comment-char	= HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable chars, no controls
-string-char		= %x20-21 / %x23-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars (ie. ", \). Unescaped $ are allowed since embed sequences must have { following it.
-multiline-char	= HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
+comment-char    = HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF  ; Tab + printable chars, no controls
+string-char     = %x20-21 / %x23-5B / %x5D-7E / %xA0-D7FF / %xE000-10FFFF ; Printable chars, no control chars or special chars (ie. ", \). Unescaped $ are allowed since embed sequences must have { following it.
+multiline-char  = HTAB / string-char / NEWLINE ; Tab + printables + newlines. Quotation marks must still be escaped
 
-embedded-value	= DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier / alternative ) OWSP RBRACE
-escaped-char		= "\" ( 
-	%x22 /			; "				quotation mark
-	%x5C /			; \				backslash
-	%x62 /			; b				backspace
-	%x66 /			; f				form feed
-	%x6E /			; n				new line
-	%x72 /			; r				carriage return
-	%x74 /			; t				tab
-	%x75 4HEXDIG /	; uXXXX			U+XXXX
-	%x55 8HEXDIG	; UXXXXXXXX		U+XXXXXXXX
+embedded-value  = DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier / alternative ) OWSP RBRACE
+escaped-char    = "\" ( 
+    %x22 /          ; "    quotation mark
+    %x5C /          ; \    backslash
+    %x62 /          ; b    backspace
+    %x66 /          ; f    form feed
+    %x6E /          ; n    new line
+    %x72 /          ; r    carriage return
+    %x74 /          ; t    tab
+    %x75 4HEXDIG /  ; uXXXX   U+XXXX
+    %x55 8HEXDIG    ; UXXXXXXXX  U+XXXXXXXX
 )
 
 ; -----------------------
 ; BConf Common Symbols & Whitespace
 ; -----------------------
-NEWLINE			= LF / CRLF
-OWSP			= *( WSP / NEWLINE ) ; Optional white space. Different to WSP, this denotes white space that carries no syntactical significance
-LBRACE			= "{"
-RBRACE			= "}"
-LBRACKET		= "["
-RBRACKET		= "]"
-LPAREN			= "("
-RPAREN			= ")"
-LANGLEBRACKET		= "<"
-RANGLEBRACKET		= ">"
-COMMA			= ","
-SEMICOLON		= ";"
-COLON			= ":"
-PERIOD			= "."
-DOLLARSIGN		= "$"
-HYPHEN-MINUS	= "-"
-PLUS			= "+"
-UNDERSCORE 		= "_"
-PIPE            = "|"
+NEWLINE       = LF / CRLF
+OWSP          = *( WSP / NEWLINE ) ; Optional white space. Different to WSP, this denotes white space that carries no syntactical significance
+LBRACE        = "{"
+RBRACE        = "}"
+LBRACKET      = "["
+RBRACKET      = "]"
+LPAREN        = "("
+RPAREN        = ")"
+LANGLEBRACKET = "<"
+RANGLEBRACKET = ">"
+COMMA         = ","
+SEMICOLON     = ";"
+COLON         = ":"
+PERIOD        = "."
+DOLLARSIGN    = "$"
+HYPHEN-MINUS  = "-"
+PLUS          = "+"
+UNDERSCORE    = "_"
+PIPE          = "|"
 
 ; -----------------------
 ; Core ABNF Rules (included for clarity)
 ; -----------------------
-ALPHA		= %x41-5A / %x61-7A		; A-Z / a-z
-CR			= %x0D					; carriage return
-CRLF		= CR LF					; internet standard newline
-DIGIT		= %x30-39				; 0-9
-DQUOTE		= %x22					; " (double quote)
-HEXDIG		= DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
-HTAB		= %x09					; horizontal tab
-LF			= %x0A					; linefeed
-SP			= %x20					; space
-WSP			= SP / HTAB				; white space
+ALPHA   = %x41-5A / %x61-7A     ; A-Z / a-z
+CR      = %x0D                  ; carriage return
+CRLF    = CR LF                 ; internet standard newline
+DIGIT   = %x30-39               ; 0-9
+DQUOTE  = %x22                  ; " (double quote)
+HEXDIG  = DIGIT / "A" / "B" / "C" / "D" / "E" / "F"
+HTAB    = %x09                  ; horizontal tab
+LF      = %x0A                  ; linefeed
+SP      = %x20                  ; space
+WSP     = SP / HTAB             ; white space
