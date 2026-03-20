@@ -40,11 +40,15 @@ value			= primitive / block / map / array / modifier / alternative / variable-ke
 primitive		= string / number / bool / null
 modifier		= bare-key LPAREN OWSP [ modifier-item *( comma-sep modifier-item ) [ comma-sep ] ] OWSP RPAREN
 modifier-item		= value / key
-block			= LBRACE OWSP [ item *( ( SEMICOLON / NEWLINE ) OWSP item ) [ block-sep ] ] OWSP RBRACE
+block			= LBRACE OWSP [ block-item *( ( SEMICOLON / NEWLINE ) OWSP block-item ) [ block-sep ] ] OWSP RBRACE
+block-item = item / spread-expr
 map			= LANGLEBRACKET OWSP [ map-member *( comma-sep map-member ) [ comma-sep ] ] OWSP RANGLEBRACKET
 map-member		= text-key OWSP COLON OWSP value
-array			= LBRACKET OWSP [ value *( comma-sep value ) [ comma-sep ] ] OWSP RBRACKET
+array			= LBRACKET OWSP [ array-item *( comma-sep array-item ) [ comma-sep ] ] OWSP RBRACKET
+array-item = value / spread-expr
 comma-sep		= OWSP COMMA OWSP
+spread-expr		= 3PERIOD spread-source
+spread-source	= variable-path / modifier / array / block 
 
 ; -----------------------
 ; Keys & Variables

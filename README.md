@@ -21,6 +21,7 @@ import from "./secrets.bconf" { $db_user; $db_pass as $database_password }
 
 $app_name = "An awesome app"
 $env = env("APP_ENV")
+$common_domains = ["https://app.example.com", "https://admin.example.com"]
 
 app {
     name = $app_name
@@ -73,7 +74,7 @@ plugins << {
 plugins << {
     name = "cors"
     config {
-        allowed_origins = ["https://app.example.com", "https://admin.example.com"]
+        allowed_origins = [...$common_domains, "staging.example.com"]
     }
 }
 

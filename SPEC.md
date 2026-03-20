@@ -13,6 +13,7 @@
 - [Blocks](#blocks)
 - [Maps](#maps)
 - [Arrays](#arrays)
+- [Spread Expressions](#spread-expressions)
 - [Statements](#statements)
 - [Modifiers](#modifiers)
 - [Variables](#variables)
@@ -476,6 +477,133 @@ mixed_array = [
     ["a", "nested", "array"],
     { foo = "bar" }
 ]
+```
+
+## Spread Expressions
+
+A spread expression inserts the contents of an existing value inline into a surrounding array or block. The syntax is three dots (`...`) immediately followed by a value called the "spread source". A spread source must be one of the following. Any other value is invalid:
+
+- A variable or modifier that resolves to an array or block
+- An array literal (`[...]`)
+- An block literal (`{ ... }`)
+
+```bconf
+$ports = [8080, 8443]
+server.hosts = ["localhost", "example.com"]
+
+// VALID: variable as source
+all_ports = [...$ports, 9000]
+
+// VALID: modifier as source (assuming getPorts() returns an array)
+dynamic = [...getPorts(), 9000]
+
+// VALID: inline array literal as source
+all_ports = [...[8080, 8443], 9000]
+
+// VALID: inline block literal as source
+server {
+    ...{ host = "localhost"; timeout = 30 }
+    port = 8080
+}
+```
+
+> Important: This syntax is designed for composition of blocks and arrays from locally available values and _not_ for directly merging configuration files. See the [extends](#extends) built-in statement instead.
+
+The type of value being spread must match the context it is being spread into. These rules are strict and violations must be rejected at parse time:
+
+- A spread value that resolves to an **array** may only be used inside an **array**. Spreading an array into a block is invalid.
+- A spread value that resolves to a **block** may only be used inside a **block**. Spreading a block into an array is invalid.
+- A spread value that resolves to any other type is always invalid regardless of context, there is no implicit coercion. For example, a spread value that is a primitive, modifier result that is not an array or block, etc.
+
+```bconf
+$ports = [8080, 8443]
+$config = { host = "localhost" }
+
+// VALID: array spread into array
+all_ports = [...$ports, 9000]
+
+// VALID: block spread into block
+server {
+    ...$config
+    port = 8080
+}
+
+// INVALID: array spread into block
+server {
+    ...$ports
+}
+
+// INVALID: block spread into array
+all = [...$config, "extra"]
+
+// INVALID: primitive spread
+$label = "main"
+invalid = [...$label]
+```
+
+Spread expressions are not valid as statement arguments. They may only appear inside array literals or blocks.
+
+```bconf
+$hosts = ["localhost", "example.com"]
+
+// INVALID: spread cannot be used as a statement argument
+allow from ...$hosts
+
+// VALID: construct the array first, then use it
+$allowed = [...$hosts, "extra.com"]
+allow from $allowed
+```
+
+### Ordering
+
+Spread expressions are evaluated in the order they appear. The "last write wins" rule continue to apply, meaning a key or value written after a spread overrides anything introduced by the spread, and a key or value written before a spread is overridden by it if the spread introduces the same key.
+
+```bconf
+$base = { host = "localhost"; port = 8080 }
+
+// `port` from $base is overridden by the explicit assignment after the spread
+server {
+    ...$base
+    port = 9000 // wins - port is 9000
+}
+
+// `port` set before the spread is overridden by $base
+server {
+    port = 7000 // loses - overridden by spread
+    ...$base // port becomes 8080
+}
+```
+
+The same applies for arrays. Spread elements are inserted at the position of the expression, preserving the order of elements within the spread value:
+
+```bconf
+$extras = [4, 5, 6]
+result = [1, 2, 3, ...$extras, 7]  // [1, 2, 3, 4, 5, 6, 7]
+```
+
+### Multiple Spreads
+
+Multiple spread expressions are allowed in the same array or block. Each is evaluated in order. For blocks, the same "last write wins" rule applies across all spreads and explicit assignments together.
+
+```bconf
+$a = { host = "localhost" }
+$b = { port = 8080 }
+$c = { timeout = 30; port = 9000 }
+
+// host = "localhost", port = 9000, timeout = 30
+// $b sets port to 8080, then $c overrides it to 9000
+server {
+    ...$a
+    ...$b
+    ...$c
+}
+```
+
+```bconf
+$first = [1, 2, 3]
+$second = [4, 5, 6]
+
+result = [...$first, ...$second]    // [1, 2, 3, 4, 5, 6]
 ```
 
 ## Statements
