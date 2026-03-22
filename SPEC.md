@@ -565,8 +565,7 @@ The values following the key in a statement can be any of the following types:
 - Arrays
 - Modifiers
 - Variables
-- Bare keys
-    - These are parsed as a string. Dotted keys and array index accessors are allowed, with the full key being resolved to a string (eg. `foo.bar[0]`)
+- Bare keys. Dotted keys and array index accessors are allowed (eg. `foo.bar[0]`)
 
 To avoid ambiguity, implementations must prioritize matching standard value types first. For instance, `true` will always be parsed as a boolean, and `123.1` as a number BEFORE being parsed as a bare key. Only if a value does not match any other type will it be treated as an unquoted string.
 
