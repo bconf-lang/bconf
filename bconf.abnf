@@ -53,7 +53,7 @@ spread-source  = variable-path / modifier / array / block
 ; -----------------------
 key             = key-path / variable-path
 key-path        = text-key *( ( PERIOD text-key ) / *( index-accessor ) )
-text-key        = bare-key / singleline-strinr
+text-key        = bare-key / singleline-string
 bare-key        = 1*( %x21 / %x23 / %x25-26 / %x2A-%x2B / %x2D / %x30-%x3A / %x3F-%x5A / %x5E-%x7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; Printable chars, no controls or special characters (", $, ', (, ), comma, ., /, ;, <, =, >, [, \, ] {, |, })
 index-accessor  = LBRACKET OWSP ( text-key / integer ) OWSP RBRACKET ; Integer for arrays and text-key for maps 
 variable-key    = DOLLARSIGN bare-key
