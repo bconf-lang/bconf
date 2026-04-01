@@ -86,6 +86,7 @@ multiline-char  = HTAB / string-char / NEWLINE ; Tab + printables + newlines. Qu
 embedded-value  = DOLLARSIGN LBRACE OWSP ( primitive / variable-path / modifier / alternative ) OWSP RBRACE
 escaped-char    = "\" ( 
     %x22 /          ; "    quotation mark
+    %x24 /          ; $    dollar sign 
     %x5C /          ; \    backslash
     %x62 /          ; b    backspace
     %x66 /          ; f    form feed
