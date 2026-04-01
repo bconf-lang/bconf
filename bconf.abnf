@@ -46,7 +46,7 @@ array          = LBRACKET OWSP [ array-item *( comma-sep array-item ) [ comma-se
 array-item     = value / spread-expr
 comma-sep      = OWSP COMMA OWSP
 spread-expr    = 3PERIOD spread-source
-spread-source  = variable-path / modifier / array / block 
+spread-source  = variable-path / modifier / array / block / alternative
 
 ; -----------------------
 ; Keys & Variables
