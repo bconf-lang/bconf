@@ -274,6 +274,7 @@ The following escape sequences are reserved. Using any other escape sequence (eg
 
 ```
 \"          - quotation mark
+\$          - dollar sign
 \\          - backslash
 \b          - backspace
 \f          - form feed
