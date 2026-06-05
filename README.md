@@ -2,30 +2,30 @@
 
 <img align="right" src="logos/bconf-100.png" alt="bconf logo">
 
-For better configuration files
+Better configuration files
 
-> This repository contains the latest draft version of the bconf specification.
+> This repository contains the working documents of the bconf specification.
 > You can find the released versions at https://bconf-lang.org
 
 ## Design Principles
 
-bconf is designed with a the following key principles in mind: configuration files should be human readable, easy to maintain, flexible and predictable. The syntax and concepts should be familiar and easy to learn, leveraging constructs found in other data-serialization and programming languages.
+bconf is designed with a single objective in mind: make it easy to compose large or complex configurations. Syntax and concepts should be familiar, but flexible enough that its easy for applications to enhance values directly without the need for magic strings. Configuration values should remain predictable with no hidden default values, and a standard library of sorts should be expected for implementations so developers have a baseline for portability.
 
 ## Example
 
 ```bconf
 // This is a bconf file
 
-extends "./base.bconf"
-import from "./secrets.bconf" { $db_user; $db_pass as $database_password }
+@extends "./base.bconf"
+@import "./secrets.bconf" { $db_user; $db_pass = $database_password }
 
+$$ENV = env("APP_ENV")
 $app_name = "An awesome app"
-$env = env("APP_ENV")
 $common_domains = ["https://app.example.com", "https://admin.example.com"]
 
 app {
     name = $app_name
-    environment = $env
+    environment = $$ENV
     features {
         auth
     }
@@ -60,7 +60,7 @@ plugins << {
     config {
         jwt_secret = env("JWT_SECRET")
         token_expiry = (
-            | eq($env, "prod") => "1hr"
+            | eq($$ENV, "prod") => "1hr"
             | "6hr"
         )
     }
@@ -74,27 +74,27 @@ plugins << {
 }
 
 api_docs_header = """
-    Welcome to the API for \${$app_name}.
-    Host: \${ref(server.http.host)}:\${ref(server.http.port)}
-    Environment: \${$env}
+    Welcome to the API for ${$app_name}.
+    Host: ${ref(server.http.host)}:${ref(server.http.port)}
+    Environment: ${$$ENV}
 """
 
-export vars {
-    $env
-    $app_name as $name
+@export {
+    $$ENV,
+    $name = $app_name
 }
 ```
 
 ## Compared to Other Languages
 
-bconf is a data-serialization format designed to be easy to enhance. Compared to other formats, like JSON, YAML and TOML, bconf is minimal and easy to write. Where it differs is an emphasis on scalability for writing large files and expressive ways to write dynamic features. Data types like tags and statements make methods and commands easy to write without it needing to be expressed awkwardly through static data structures.
+bconf sits somewhere between a data-serialization format and a programming language. At its core, it is a data-serialization format since only a hash-map is produced from a document. Unlike other formats though, there is an emphasis on features that are more programming language like, such as variables, directives and modifiers. However, basically everything else is missing from what you'd expect a full-featured programming language to have, such as arithmetic and equality operators.
 
-Unlike other data-serialization formats, bconf does not require a strict hierarchy of values to define deeply nested values. Values can be assigned using deeply nested keys and array indexes. Arrays can also have values pushed to it with an append operator.
+Unlike other data-serialization formats, bconf does not require a strict hierarchy of values to define deeply nested values. Values can be assigned using nested keys and array indexes. Keys can have values conditionally assigned if no value is present at the key, and arrays can also have values pushed to it with an append operator.
 
 Features often used in tandem when creating configuration with data-serialization formats, such as extending files and referencing other values, are typically implementation specific and non-portable. However, features like this are standardized in bconf, ensuring the same set of features can be used regardless of parser or language.
 
 As bconf is explicitly designed for configuration files, it is not intended to support serializing arbitrary data structures. The root of any valid bconf document is always a hash-map which excludes some data from being serialized.
 
-## Pitching in
+## Contributions
 
-Ideas, pull requests, documentation, bug fixes, and all other contributions are welcome!
+Any ideas, fixes, documentation, etc., are welcome! If you have any ideas, feedback or suggestions, open an issue.
