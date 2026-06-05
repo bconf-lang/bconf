@@ -11,7 +11,7 @@
 
 bconf = OWSP [ *comment ] OWSP [ LBRACE ] [ block-body ] [ RBRACE ] OWSP [ *comment ] OWSP
 
-identifier = 1*( %x21 / %x23 / %x25-26 / %x2A-2B / %x2D / %x2F / %x30-3A / %x41-5A / %x5C / %x5E-5F / %x61-7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; No control chars or special characters (", $, ', (, ), comma, ., ;, <, =, >, ?, @, [, ] `, {, |, })
+identifier = 1*( %x21 / %x23 / %x25-26 / %x2A-2B / %x2D / %x30-3A / %x41-5A / %x5C / %x5E-5F / %x61-7A / %x7E / %xA1-D7FF / %xE000-10FFFF ) ; No control chars or special characters (", $, ', (, ), comma, ., ;, <, =, >, ?, @, [, ] `, {, |, })
 directive-ident = ATSIGN identifier
 variable-ident = 1*2DOLLARSIGN identifier
 

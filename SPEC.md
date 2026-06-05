@@ -122,7 +122,7 @@ C-style block comments (`/* ... */`) are not supported.
 An identifier is a sequence of one or more printable Unicode characters excluding the following reserved characters:
 
 ```
-"  $  '  (  )  ,  .  ;  <  =  >  ?  @  [  ]  `  {  |  }
+"  $  '  (  )  ,  . /  ;  <  =  >  ?  @  [  ]  `  {  |  }
 ```
 
 Identifiers are always interpreted as strings. An identifier made entirely of digits (e.g. `1234`) is the string `"1234"`, not the integer `1234`.
