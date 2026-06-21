@@ -824,6 +824,29 @@ $hosts = ["localhost", "example.com"]
 @allow [...$hosts, "extra.com"]
 ```
 
+Only values are spread into blocks, any variables defined within the block should never be assigned through a spread. Since arrays can only contain values, this should happen by default.
+
+```bconf
+$config = {
+    // When spreading this block, these variables should not appear unless
+    // they have been explicitly defined in the block being spread into
+    $$PORT = 8080
+    $$HOST = "localhost"
+
+    host = $$LOCALHOST
+    port = 8080
+}
+
+// Resolved value will just have keys for `env`, `host`, `port`.
+server {
+    env = "dev"
+    ...$config
+
+    // INVALID: `$$LOCALHOST` is not defined
+    host = $$LOCAHOST
+}
+```
+
 ### Ordering
 
 Spread expressions are evaluated in the order they appear. Inside a block, the [last-assign-wins](#key-value-pairs) rule applies across all spreads and explicit assignments together, so position relative to other statements determines which value wins.
