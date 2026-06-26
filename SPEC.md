@@ -597,9 +597,9 @@ $ports = [80, 443]
 @allow $ports
 ```
 
-A directive may optionally produce a value. A directive that produces no value is distinct from one that produces `null` — the former has no output at all, while the latter produces an explicit [null](#null) value.
+A directive may optionally produce a node (or the equivalent of a raw value). A directive that produces no node is distinct from one that produces a `null` node — the former has no output at all, while the latter produces an explicit [null](#null) value.
 
-When a directive is used as a statement and produces a **block**, the statements from that block are merged into the parent block at the point of the directive call, as if they had been written inline. If the directive produces no value, evaluation continues normally.
+When a directive is used as a statement and produces a **block** node, all statements from that block are merged into the parent block at the point of the directive call (including variables, comments, etc.), as if they had been written inline. If the directive produces no node, evaluation continues normally.
 
 ```bconf
 // --- base.bconf
@@ -608,7 +608,7 @@ foo = $bar
 
 // --- main.bconf
 // Assuming @insert parses the file and returns it as a block,
-// its statements (including variable declarations) are merged here.
+// its statements (including variable declarations and other statements) are merged here.
 @insert "./base.bconf"
 
 // VALID: $bar is now in scope, merged in from base.bconf.
@@ -619,7 +619,7 @@ baz = $bar
 foo = "baz"
 ```
 
-When a directive produces any value other than a block (including `null`), the value is treated as if it were written inline at the point of the directive call. If the inline value would be invalid syntax in that context, it is an error.
+When a directive produces any node other than a block (including `null`) inside another block, the node is treated as if it were written inline at the point of the directive call. If the inline value would be invalid syntax in that context, it is an error.
 
 ```bconf
 // Assuming @array returns [123, "test", 321], this is invalid because
@@ -629,7 +629,7 @@ foo {
 }
 ```
 
-When a directive is used as a **value** in a key-value pair, the produced value is used directly. If the directive produces no value, it is treated as `null`.
+When a directive is used as a **value**, the produced node is evaluated directly as a value. If the directive produces no node, it is treated as `null`.
 
 ```bconf
 // Assuming @exec returns the stdout of the command.
@@ -637,6 +637,15 @@ $working_dir = @exec pwd
 
 // Assuming @emit produces no value, this is the same as: result = null
 result = @emit "ok"
+
+array = [
+    // Directives are also regular values, the value will just be `null`
+    @emit "first",
+]
+
+// Directives can be used as arguments inside other directives, although
+// they may be wrapped in parentheses to create a resolver to reduce ambiguity
+@directive 123 @exec pwd
 ```
 
 ### Resolvers
