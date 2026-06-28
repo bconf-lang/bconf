@@ -1062,7 +1062,7 @@ Returns `any`
 ref("foo.bar[0]")
 ```
 
-Looks up a value in the current document by key path and returns a deep copy of it. The argument must be a string formatted as a valid bconf key path (including dotted keys and array indexes). `null` is considered a defined value and is returned as-is.
+Looks up a value in the current document by key path and returns a deep copy of it. The argument must be a string formatted as a valid bconf key path (including dotted keys and array indexes). It will _always_ search from the root of the document, so key paths must always be absolute to the root of the document. `null` is considered a defined value and is returned as-is.
 
 Fails if no value has been assigned at the specified key path at the time of the call.
 
@@ -1077,6 +1077,13 @@ first_host = ref("hosts[0]")        // "localhost"
 
 // INVALID: No value has been assigned at this path.
 missing = ref("server.timeout")
+
+config {
+    server.timeout = 20
+
+    // Key path must always be absolute to the root
+    delay = ref("config.server.timeout")
+}
 ```
 
 ---
