@@ -30,7 +30,7 @@ spread-source = dynamic-value / array / block;
 key = ( identifier / variable-ident )
 key =/ DQUOTE 1*string-content DQUOTE
 key-path = key *( *index / ( PERIOD key ) )
-index = LBRACKET OWSP integer OWSP RBRACKET
+index = LBRACKET *WSP integer *WSP RBRACKET
 
 ;
 ; Values
