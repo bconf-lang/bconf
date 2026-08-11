@@ -19,8 +19,8 @@ variable-ident = 1*2DOLLARSIGN identifier
 ; Statements
 ;
 comment = "//" *( HTAB / %x20-7E / %xA0-D7FF / %xE000-10FFFF )  ; Tab + printable chars, no controls
-key-value = key-path OWSP ( "=" / "?=" / "<<" ) OWSP value
-key-value =/ key-path OWSP block 
+key-value = key-path *WSP ( "=" / "?=" / "<<" ) *WSP value
+key-value =/ key-path *WSP block 
 spread = 3PERIOD spread-source
 spread-source = dynamic-value / array / block;
 
